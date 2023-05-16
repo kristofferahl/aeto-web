@@ -1,15 +1,6 @@
 <template>
-  <div class="about">
-    <h1>About aeto</h1>
+  <div>
+    <h2>aeto - aws-eks-tenant-operator</h2>
+    <p>A kubernetes "tenant" operator.</p>
   </div>
 </template>
-
-<style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
-</style>

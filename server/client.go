@@ -42,15 +42,18 @@ func (c *AetoClient) NewCoreV1Alpha1Client() (*rest.RESTClient, error) {
 	return client, nil
 }
 
-func (c *AetoClient) CoreV1Alpha1(namespace string) ProjectInterface {
+func (c *AetoClient) CoreV1Alpha1(namespace string) CoreV1Alpha1Interface {
 	return &corev1Alpha1Client{
 		restClient: c.coreV1Alpha1,
 		ns:         namespace,
 	}
 }
 
-type ProjectInterface interface {
-	List(opts metav1.ListOptions) (*corev1alpha1.TenantList, error)
+type CoreV1Alpha1Interface interface {
+	ListTenants(opts metav1.ListOptions) (*corev1alpha1.TenantList, error)
+	GetTenant(name string) (*corev1alpha1.Tenant, error)
+	ListResourceSets(opts metav1.ListOptions) (*corev1alpha1.ResourceSetList, error)
+	GetResourceSet(name string) (*corev1alpha1.ResourceSet, error)
 }
 
 type corev1Alpha1Client struct {
@@ -58,12 +61,53 @@ type corev1Alpha1Client struct {
 	ns         string
 }
 
-func (c *corev1Alpha1Client) List(opts metav1.ListOptions) (*corev1alpha1.TenantList, error) {
+func (c *corev1Alpha1Client) ListTenants(opts metav1.ListOptions) (*corev1alpha1.TenantList, error) {
 	result := corev1alpha1.TenantList{}
 	err := c.restClient.
 		Get().
 		Namespace(c.ns).
 		Resource("tenants").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) GetTenant(name string) (*corev1alpha1.Tenant, error) {
+	result := corev1alpha1.Tenant{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Name(name).
+		Resource("tenants").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) ListResourceSets(opts metav1.ListOptions) (*corev1alpha1.ResourceSetList, error) {
+	result := corev1alpha1.ResourceSetList{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Resource("resourcesets").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) GetResourceSet(name string) (*corev1alpha1.ResourceSet, error) {
+	result := corev1alpha1.ResourceSet{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Name(name).
+		Resource("resourcesets").
 		//VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.Background()).
 		Into(&result)

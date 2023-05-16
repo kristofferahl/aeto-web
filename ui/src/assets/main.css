@@ -1,34 +1,132 @@
-@import './base.css';
+body {
+  min-height: 100vh;
+  color: #9a9cab;
+  background-color: #181821;
+  font-family: Roboto, sans-serif;
+  font-size: 14px;
+}
 
-#app {
-  max-width: 1280px;
+a {
+  color: #83d8ae;
+}
+
+table thead th,
+table tbody td {
+  border-bottom: 1px solid #262635;
+}
+
+header {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  height: 5.2rem;
+  background: #2d2d3e;
+  border-bottom: solid 1px #262635;
+  font-family: Poppins, sans-serif;
+}
+header .wrapper {
+  max-width: 97%;
   margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
 }
-
-a,
-.green {
+header .brand {
+  display: inline;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 5.2rem;
+  padding: 0;
+  margin-right: 0.5em;
   text-decoration: none;
-  color: #004d84;
-  transition: 0.4s;
+  color: #ada6f2;
+  position: relative;
+}
+header .msg {
+  display: inline;
+  font-size: 2rem;
+  font-weight: 100;
+  line-height: 5.2rem;
+  padding: 0;
+  text-decoration: none;
+  color: #9a9cab;
+  position: relative;
+}
+header .menu {
+  list-style: none;
+  margin-bottom: 0;
+}
+header .menu li {
+  float: left;
+  margin-bottom: 0;
+  margin-left: 2.5rem;
+  position: relative;
+}
+header .menu a {
+  display: inline;
+  font-size: 1.2rem;
+  line-height: 5.2rem;
+  padding: 0;
+  text-decoration: none;
 }
 
-@media (hover: hover) {
-  a:hover {
-    text-decoration: underline;
-  }
+aside {
+  background-color: #1f1f2b;
+  position: fixed;
+  height: 100%;
+  margin-top: 5.2rem;
+  overflow: auto;
+  font-family: Poppins, sans-serif;
+}
+aside nav {
+  padding: 2rem 1rem;
+  margin-right: -1rem;
+  font-size: 1.3rem;
+}
+aside nav ul {
+  list-style-type: none;
+}
+aside nav .header {
+  margin: 1em 0 0.5em 0.75em;
+  border-bottom: solid 1px #9a9cab;
+}
+aside nav a {
+  color: #9a9cab;
+  display: block;
+  padding: 0.5em 0 0.5em 0.75em;
+  font-weight: 500;
+  font-size: 1.4rem;
+}
+aside nav a > svg {
+  width: 21px;
+  height: 21px;
+  line-height: 40px;
+  text-align: center;
+  vertical-align: text-top;
+  color: #9a9cab;
+  margin-right: 15px;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+aside nav .router-link-active,
+aside nav a.router-link-active > svg {
+  color: #83d8ae;
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+.content {
+  position: fixed;
+  height: 100%;
+  margin-top: 5.8rem;
+  padding: 2rem 4rem !important;
+  overflow: auto;
+}
+.content h2 {
+  font-size: 1.2em;
+  font-weight: 500;
+  color: white;
+  font-family: Poppins, sans-serif;
 }
