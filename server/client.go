@@ -52,6 +52,8 @@ func (c *AetoClient) CoreV1Alpha1(namespace string) CoreV1Alpha1Interface {
 type CoreV1Alpha1Interface interface {
 	ListTenants(opts metav1.ListOptions) (*corev1alpha1.TenantList, error)
 	GetTenant(name string) (*corev1alpha1.Tenant, error)
+	ListBlueprints(opts metav1.ListOptions) (*corev1alpha1.BlueprintList, error)
+	GetBlueprint(name string) (*corev1alpha1.Blueprint, error)
 	ListResourceSets(opts metav1.ListOptions) (*corev1alpha1.ResourceSetList, error)
 	GetResourceSet(name string) (*corev1alpha1.ResourceSet, error)
 }
@@ -81,6 +83,32 @@ func (c *corev1Alpha1Client) GetTenant(name string) (*corev1alpha1.Tenant, error
 		Namespace(c.ns).
 		Name(name).
 		Resource("tenants").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+func (c *corev1Alpha1Client) ListBlueprints(opts metav1.ListOptions) (*corev1alpha1.BlueprintList, error) {
+	result := corev1alpha1.BlueprintList{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Resource("blueprints").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) GetBlueprint(name string) (*corev1alpha1.Blueprint, error) {
+	result := corev1alpha1.Blueprint{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Name(name).
+		Resource("blueprints").
 		//VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.Background()).
 		Into(&result)

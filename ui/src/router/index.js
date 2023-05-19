@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('../views/TenantsView.vue')
     },
     {
+      path: '/blueprints/:namespace?/:name?',
+      name: 'blueprints',
+      component: () => import('../views/BlueprintsView.vue')
+    },
+    {
       path: '/resourcesets/:namespace?/:name?',
       name: 'resourcesets',
       component: () => import('../views/ResourceSetsView.vue')

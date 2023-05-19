@@ -29,6 +29,8 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 
 		r.Get("/tenants", listTenants(client))
 		r.Get("/tenants/{namespace}/{name}", getTenant(client))
+		r.Get("/blueprints", listBlueprints(client))
+		r.Get("/blueprints/{namespace}/{name}", getBlueprint(client))
 		r.Get("/resourcesets", listResourceSets(client))
 		r.Get("/resourcesets/{namespace}/{name}", getResourceSet(client))
 	})
@@ -48,6 +50,55 @@ func listTenants(client *AetoClient) func(w http.ResponseWriter, req *http.Reque
 		w.Header().Set("Content-Type", "application/json")
 
 		tl, err := client.CoreV1Alpha1("aeto").ListTenants(v1.ListOptions{})
+		if hasErr(w, err) {
+			return
+		}
+
+		data, err := json.Marshal(tl)
+		if hasErr(w, err) {
+			return
+		}
+
+		res, err := jsonfilter.Filter(data, "items(metadata(annotations,creationTimestamp,finalizers,generation,name,namespace,resourceVersion,uid),spec,status)")
+		if hasErr(w, err) {
+			return
+		}
+
+		w.Write(res)
+	}
+}
+
+func getBlueprint(client *AetoClient) func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		namespace := chi.URLParam(req, "namespace")
+		name := chi.URLParam(req, "name")
+
+		if namespace != "" && name != "" {
+			rs, err := client.CoreV1Alpha1(namespace).GetBlueprint(name)
+			if hasErr(w, err) {
+				// TODO: Handle 404
+				return
+			}
+
+			data, err := json.Marshal(rs)
+			if hasErr(w, err) {
+				return
+			}
+
+			w.Write(data)
+		} else {
+			w.WriteHeader(400)
+			w.Write([]byte(""))
+		}
+	}
+}
+
+func listBlueprints(client *AetoClient) func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		tl, err := client.CoreV1Alpha1("aeto").ListBlueprints(v1.ListOptions{})
 		if hasErr(w, err) {
 			return
 		}

@@ -15,7 +15,7 @@ export default {
       return [
         { label: 'Name', format: (r) => r.metadata.name, mode: 'details' },
         { label: 'Fullname', format: (r) => r.spec.name },
-        { label: 'Blueprint', format: (r) => r.status.blueprint },
+        { label: 'Blueprint', format: (r) => r.status.blueprint, linkTo: 'blueprint' },
         { label: 'Namespace', format: (r) => r.status.namespace },
         { label: 'ResourceSet', format: (r) => r.status.resourceSet, linkTo: 'resourceset' },
         { label: 'Events', format: (r) => r.status.events },
