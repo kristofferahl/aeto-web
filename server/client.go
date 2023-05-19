@@ -56,6 +56,8 @@ type CoreV1Alpha1Interface interface {
 	GetBlueprint(name string) (*corev1alpha1.Blueprint, error)
 	ListResourceSets(opts metav1.ListOptions) (*corev1alpha1.ResourceSetList, error)
 	GetResourceSet(name string) (*corev1alpha1.ResourceSet, error)
+	ListResourceTemplates(opts metav1.ListOptions) (*corev1alpha1.ResourceTemplateList, error)
+	GetResourceTemplate(name string) (*corev1alpha1.ResourceTemplate, error)
 }
 
 type corev1Alpha1Client struct {
@@ -136,6 +138,33 @@ func (c *corev1Alpha1Client) GetResourceSet(name string) (*corev1alpha1.Resource
 		Namespace(c.ns).
 		Name(name).
 		Resource("resourcesets").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) ListResourceTemplates(opts metav1.ListOptions) (*corev1alpha1.ResourceTemplateList, error) {
+	result := corev1alpha1.ResourceTemplateList{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Resource("resourcetemplates").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *corev1Alpha1Client) GetResourceTemplate(name string) (*corev1alpha1.ResourceTemplate, error) {
+	result := corev1alpha1.ResourceTemplate{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Name(name).
+		Resource("resourcetemplates").
 		//VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.Background()).
 		Into(&result)
