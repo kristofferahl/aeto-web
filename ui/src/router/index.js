@@ -29,6 +29,11 @@ const router = createRouter({
       component: () => import('../views/ResourceSetsView.vue')
     },
     {
+      path: '/resourcetemplates/:namespace?/:name?',
+      name: 'resourcetemplates',
+      component: () => import('../views/ResourceTemplatesView.vue')
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue')
