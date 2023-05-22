@@ -61,6 +61,33 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 		r.Get("/eventstreamchunks/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.EventV1Alpha1(namespace).GetEventStreamChunk(name)
 		}))
+
+		r.Get("/savingspolicies", listResource(client, func() (interface{}, error) {
+			return client.SustainabilityV1Alpha1("aeto").ListSavingsPolicies(v1.ListOptions{})
+		}))
+		r.Get("/savingspolicies/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
+			return client.SustainabilityV1Alpha1(namespace).GetSavingsPolicy(name)
+		}))
+
+		r.Get("/certificates", listResource(client, func() (interface{}, error) {
+			return client.AcmAwsV1Alpha1("aeto").ListCertificates(v1.ListOptions{})
+		}))
+		r.Get("/certificates/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
+			return client.AcmAwsV1Alpha1(namespace).GetCertificate(name)
+		}))
+		r.Get("/certificateconnectors", listResource(client, func() (interface{}, error) {
+			return client.AcmAwsV1Alpha1("aeto").ListCertificateConnectors(v1.ListOptions{})
+		}))
+		r.Get("/certificateconnectors/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
+			return client.AcmAwsV1Alpha1(namespace).GetCertificateConnector(name)
+		}))
+
+		r.Get("/hostedzones", listResource(client, func() (interface{}, error) {
+			return client.Route53AwsV1Alpha1("aeto").ListHostedZones(v1.ListOptions{})
+		}))
+		r.Get("/hostedzones/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
+			return client.Route53AwsV1Alpha1(namespace).GetHostedZone(name)
+		}))
 	})
 }
 
