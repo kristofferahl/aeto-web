@@ -54,6 +54,13 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 		r.Get("/resourcetemplates/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.CoreV1Alpha1(namespace).GetResourceTemplate(name)
 		}))
+
+		r.Get("/eventstreamchunks", listResource(client, func() (interface{}, error) {
+			return client.EventV1Alpha1("aeto").ListEventStreamChunks(v1.ListOptions{})
+		}))
+		r.Get("/eventstreamchunks/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
+			return client.EventV1Alpha1(namespace).GetEventStreamChunk(name)
+		}))
 	})
 }
 

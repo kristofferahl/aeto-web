@@ -34,6 +34,11 @@ const router = createRouter({
       component: () => import('../views/ResourceTemplatesView.vue')
     },
     {
+      path: '/eventstreamchunks/:namespace?/:name?',
+      name: 'eventstreamchunks',
+      component: () => import('../views/EventStreamChunksView.vue')
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue')

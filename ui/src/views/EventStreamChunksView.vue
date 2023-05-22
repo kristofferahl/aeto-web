@@ -14,10 +14,10 @@ export default {
     fields() {
       return [
         { label: 'Name', format: (r) => r.metadata.name, mode: 'details' },
-        { label: 'Parameters', format: (r) => r.spec.parameters, mode: 'details' },
-        { label: 'Parameters', format: (r) => r.spec.parameters.length, mode: 'list' },
-        { label: 'Resources', format: (r) => r.spec.resources.length },
-        { label: 'Rules', format: (r) => r.spec.rules }
+        { label: 'Id', format: (r) => r.spec.id },
+        { label: 'Version', format: (r) => r.spec.version },
+        { label: 'Timestamp', format: (r) => r.spec.ts },
+        { label: 'Events', format: (r) => r.spec.events.length },
       ]
     }
   }
@@ -26,7 +26,7 @@ export default {
 
 <template>
   <Resources
-    resourceType="ResourceTemplates"
+    resourceType="EventStreamChunks"
     :namespace="namespace"
     :name="name"
     :fields="fields"

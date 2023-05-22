@@ -4,6 +4,7 @@ import (
 	"context"
 
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
+	eventv1alpha1 "github.com/kristofferahl/aeto/apis/event/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -11,8 +12,9 @@ import (
 )
 
 type AetoClient struct {
-	restConfig   *rest.Config
-	coreV1Alpha1 *rest.RESTClient
+	restConfig    *rest.Config
+	corev1Alpha1  *rest.RESTClient
+	eventv1Alpha1 *rest.RESTClient
 }
 
 func NewForConfig(c *rest.Config) (*AetoClient, error) {
@@ -20,14 +22,24 @@ func NewForConfig(c *rest.Config) (*AetoClient, error) {
 		restConfig: c,
 	}
 
-	corev1Alpha1Client, _ := client.NewCoreV1Alpha1Client()
+	corev1Alpha1Client, err := client.newCoreV1Alpha1Client()
+	if err != nil {
+		return nil, err
+	}
+
+	eventv1Alpha1Client, err := client.newEventV1Alpha1Client()
+	if err != nil {
+		return nil, err
+	}
+
 	return &AetoClient{
-		restConfig:   c,
-		coreV1Alpha1: corev1Alpha1Client,
+		restConfig:    c,
+		corev1Alpha1:  corev1Alpha1Client,
+		eventv1Alpha1: eventv1Alpha1Client,
 	}, nil
 }
 
-func (c *AetoClient) NewCoreV1Alpha1Client() (*rest.RESTClient, error) {
+func (c *AetoClient) newCoreV1Alpha1Client() (*rest.RESTClient, error) {
 	config := *c.restConfig
 	config.ContentConfig.GroupVersion = &corev1alpha1.GroupVersion
 	config.APIPath = "/apis"
@@ -42,9 +54,31 @@ func (c *AetoClient) NewCoreV1Alpha1Client() (*rest.RESTClient, error) {
 	return client, nil
 }
 
+func (c *AetoClient) newEventV1Alpha1Client() (*rest.RESTClient, error) {
+	config := *c.restConfig
+	config.ContentConfig.GroupVersion = &eventv1alpha1.GroupVersion
+	config.APIPath = "/apis"
+	config.NegotiatedSerializer = scheme.Codecs.WithoutConversion()
+	config.UserAgent = rest.DefaultKubernetesUserAgent()
+
+	client, err := rest.RESTClientFor(&config)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
 func (c *AetoClient) CoreV1Alpha1(namespace string) CoreV1Alpha1Interface {
 	return &corev1Alpha1Client{
-		restClient: c.coreV1Alpha1,
+		restClient: c.corev1Alpha1,
+		ns:         namespace,
+	}
+}
+
+func (c *AetoClient) EventV1Alpha1(namespace string) EventV1Alpha1Interface {
+	return &eventv1Alpha1Client{
+		restClient: c.eventv1Alpha1,
 		ns:         namespace,
 	}
 }
@@ -60,7 +94,17 @@ type CoreV1Alpha1Interface interface {
 	GetResourceTemplate(name string) (*corev1alpha1.ResourceTemplate, error)
 }
 
+type EventV1Alpha1Interface interface {
+	ListEventStreamChunks(opts metav1.ListOptions) (*eventv1alpha1.EventStreamChunkList, error)
+	GetEventStreamChunk(name string) (*eventv1alpha1.EventStreamChunk, error)
+}
+
 type corev1Alpha1Client struct {
+	restClient rest.Interface
+	ns         string
+}
+
+type eventv1Alpha1Client struct {
 	restClient rest.Interface
 	ns         string
 }
@@ -165,6 +209,33 @@ func (c *corev1Alpha1Client) GetResourceTemplate(name string) (*corev1alpha1.Res
 		Namespace(c.ns).
 		Name(name).
 		Resource("resourcetemplates").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *eventv1Alpha1Client) ListEventStreamChunks(opts metav1.ListOptions) (*eventv1alpha1.EventStreamChunkList, error) {
+	result := eventv1alpha1.EventStreamChunkList{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Resource("eventstreamchunks").
+		//VersionedParams(&opts, scheme.ParameterCodec).
+		Do(context.Background()).
+		Into(&result)
+
+	return &result, err
+}
+
+func (c *eventv1Alpha1Client) GetEventStreamChunk(name string) (*eventv1alpha1.EventStreamChunk, error) {
+	result := eventv1alpha1.EventStreamChunk{}
+	err := c.restClient.
+		Get().
+		Namespace(c.ns).
+		Name(name).
+		Resource("eventstreamchunks").
 		//VersionedParams(&opts, scheme.ParameterCodec).
 		Do(context.Background()).
 		Into(&result)

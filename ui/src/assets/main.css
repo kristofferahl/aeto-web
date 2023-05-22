@@ -30,7 +30,7 @@ header {
   font-family: Poppins, sans-serif;
 }
 header .wrapper {
-  max-width: 97%;
+  padding: 0 2rem;
   margin: 0 auto;
 }
 header .brand {
@@ -88,8 +88,11 @@ aside nav {
 aside nav ul {
   list-style-type: none;
 }
+aside nav li {
+  margin: 0;
+}
 aside nav .header {
-  margin: 1em 0 0.5em 0.75em;
+  margin: 2rem 0 0.5rem 0.75rem;
   border-bottom: solid 1px #9a9cab;
 }
 aside nav a {
