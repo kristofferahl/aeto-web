@@ -11,8 +11,14 @@ a {
 }
 
 table thead th,
-table tbody td {
+table tbody td,
+table tbody th {
   border-bottom: 1px solid #262635;
+}
+table tbody th {
+  font-weight: 500;
+  color: white;
+  font-family: Poppins, sans-serif;
 }
 
 header {
@@ -132,4 +138,36 @@ aside nav a.router-link-active > svg {
   font-weight: 500;
   color: white;
   font-family: Poppins, sans-serif;
+}
+.content h3 {
+  font-size: 1em;
+  font-weight: 500;
+  color: white;
+  font-family: Poppins, sans-serif;
+}
+
+.content table td {
+  vertical-align: top;
+}
+
+.content table td pre {
+  background-color: #15151e;
+  border-left-color: #83d8ae;
+  margin: 0;
+  padding: 0 0.5em;
+}
+.content table td pre.withcode {
+  border-left-color: #ada6f2;
+}
+.content table td pre code {
+  background-color: #15151e;
+}
+
+.content section.column {
+  overflow: scroll;
+}
+.content .dashboard .card {
+  background-color: #1f1f2b;
+  padding: 2rem;
+  min-height: 20rem;
 }

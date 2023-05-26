@@ -12,10 +12,7 @@ export default {
       return this.$route.params.name
     },
     fields() {
-      return [
-        { key: 'resources', mode: 'list', format: (spec) => spec.resources.length },
-        { key: 'resources', mode: 'details', format: (spec) => spec.resources, pre: true }
-      ]
+      return [{ key: 'suspended', format: (spec) => spec.suspended.map((s) => s).join(',') }]
     },
     status() {
       return []
@@ -26,7 +23,7 @@ export default {
 
 <template>
   <Resources
-    resourceType="ResourceSets"
+    resourceType="SavingsPolicies"
     :namespace="namespace"
     :name="name"
     :fields="fields"

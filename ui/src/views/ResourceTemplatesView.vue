@@ -13,12 +13,15 @@ export default {
     },
     fields() {
       return [
-        { label: 'Name', format: (r) => r.metadata.name, mode: 'details' },
-        { label: 'Parameters', format: (r) => r.spec.parameters, mode: 'details' },
-        { label: 'Parameters', format: (r) => r.spec.parameters.length, mode: 'list' },
-        { label: 'Resources', format: (r) => r.spec.resources.length },
-        { label: 'Rules', format: (r) => r.spec.rules }
+        { key: 'parameters', mode: 'details', format: (spec) => spec.parameters, pre: true },
+        { key: 'parameters', mode: 'list', format: (spec) => spec.parameters.length },
+        { key: 'resources', mode: 'list', format: (spec) => spec.resources.length },
+        { key: 'resources', mode: 'details', format: (spec) => spec.resources, pre: true },
+        { key: 'rules', format: (spec) => spec.rules, pre: true }
       ]
+    },
+    status() {
+      return []
     }
   }
 }
@@ -30,5 +33,6 @@ export default {
     :namespace="namespace"
     :name="name"
     :fields="fields"
+    :status="status"
   />
 </template>

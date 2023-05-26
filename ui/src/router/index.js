@@ -39,6 +39,26 @@ const router = createRouter({
       component: () => import('../views/EventStreamChunksView.vue')
     },
     {
+      path: '/savingspolicies/:namespace?/:name?',
+      name: 'savingspolicies',
+      component: () => import('../views/SavingsPoliciesView.vue')
+    },
+    {
+      path: '/certificates/:namespace?/:name?',
+      name: 'certificates',
+      component: () => import('../views/CertificatesView.vue')
+    },
+    {
+      path: '/certificateconnectors/:namespace?/:name?',
+      name: 'certificateconnectors',
+      component: () => import('../views/CertificateConnectorsView.vue')
+    },
+    {
+      path: '/hostedzones/:namespace?/:name?',
+      name: 'hostedzones',
+      component: () => import('../views/HostedZonesView.vue')
+    },
+    {
       path: '/about',
       name: 'about',
       component: () => import('../views/AboutView.vue')

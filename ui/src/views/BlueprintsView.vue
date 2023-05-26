@@ -13,16 +13,23 @@ export default {
     },
     fields() {
       return [
-        { label: 'Name', format: (r) => r.metadata.name, mode: 'details' },
-        { label: 'ResourceNamePrefix', format: (r) => r.spec.resourceNamePrefix },
-        { label: 'Resources', format: (r) => r.spec.resources.length },
-        { label: 'Created', format: (r) => r.metadata.creationTimestamp, mode: 'details' }
+        { key: 'resources', mode: 'list', format: (spec) => spec.resources.length },
+        { key: 'resources', mode: 'details', format: (spec) => spec.resources, pre: true }
       ]
+    },
+    status() {
+      return []
     }
   }
 }
 </script>
 
 <template>
-  <Resources resourceType="Blueprints" :namespace="namespace" :name="name" :fields="fields" />
+  <Resources
+    resourceType="Blueprints"
+    :namespace="namespace"
+    :name="name"
+    :fields="fields"
+    :status="status"
+  />
 </template>

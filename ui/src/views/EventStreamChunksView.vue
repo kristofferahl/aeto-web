@@ -13,12 +13,18 @@ export default {
     },
     fields() {
       return [
-        { label: 'Name', format: (r) => r.metadata.name, mode: 'details' },
-        { label: 'Id', format: (r) => r.spec.id },
-        { label: 'Version', format: (r) => r.spec.version },
-        { label: 'Timestamp', format: (r) => r.spec.ts },
-        { label: 'Events', format: (r) => r.spec.events.length }
+        { key: 'ts', label: 'Timestamp' },
+        { key: 'events', mode: 'list', format: (spec) => spec.events.length },
+        {
+          key: 'events',
+          mode: 'details',
+          format: (spec) => spec.events.map((e) => JSON.parse(e.raw)),
+          pre: true
+        }
       ]
+    },
+    status() {
+      return []
     }
   }
 }
@@ -30,5 +36,6 @@ export default {
     :namespace="namespace"
     :name="name"
     :fields="fields"
+    :status="status"
   />
 </template>
