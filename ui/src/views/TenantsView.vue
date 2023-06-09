@@ -16,7 +16,12 @@ export default {
     },
     status() {
       return [
-        { key: 'blueprint', format: (status) => status.blueprint, linkTo: 'blueprint' },
+        {
+          key: 'blueprint',
+          mode: 'details',
+          format: (status) => status.blueprint,
+          linkTo: 'blueprint'
+        },
         { key: 'resourceSet', format: (status) => status.resourceSet, linkTo: 'resourceset' }
       ]
     }

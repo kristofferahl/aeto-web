@@ -13,6 +13,7 @@ export default {
     },
     fields() {
       return [
+        { key: 'active', mode: 'list', hide: true },
         { key: 'resources', mode: 'list', format: (spec) => spec.resources.length },
         { key: 'resources', mode: 'details', format: (spec) => spec.resources, pre: true }
       ]

@@ -14,8 +14,7 @@ export default {
     namespace: String,
     name: String,
     fields: Array,
-    status: Array,
-    filter: Function
+    status: Array
   },
 
   data() {
@@ -41,7 +40,7 @@ export default {
           console.log('details', this.resource)
         } else {
           this.resource = null
-          this.items = data.items.filter((i) => (this.filter ? this.filter(i) : i))
+          this.items = data.items
           console.log('list', this.items)
         }
       } catch (e) {
@@ -119,9 +118,11 @@ export default {
           }
         })
     },
-    walkStatusConditions(s) {
+    walkStatusConditions(s, format) {
       return s.conditions
-        ? s.conditions.map((c) => this.formatConditions(c)).filter((kv) => kv !== null)
+        ? s.conditions
+            .map((c) => (format === true ? this.formatConditions(c) : c))
+            .filter((kv) => kv !== null)
         : []
     },
     formatConditions(c) {
@@ -224,7 +225,7 @@ export default {
           <tr>
             <th colspan="2">Conditions</th>
           </tr>
-          <tr v-for="kv in walkStatusConditions(resource.status)">
+          <tr v-for="kv in walkStatusConditions(resource.status, true)">
             <td>{{ kv.label }}</td>
             <td><pre v-html="kv.value"></pre></td>
           </tr>
@@ -254,7 +255,10 @@ export default {
           <th v-for="f in walkResource(items[0].spec, 'list')" :title="f.key">
             {{ f.label }}
           </th>
-          <th>Status</th>
+          <th v-if="items.some((i) => i.status?.status !== undefined)">Status</th>
+          <th v-for="kv in walkStatusConditions(items[0].status)">
+            {{ kv.type }}
+          </th>
           <th>Created</th>
         </tr>
       </thead>
@@ -272,8 +276,11 @@ export default {
             }}</RouterLink>
             <span v-else>{{ f.value }}</span>
           </td>
-          <td>
+          <td v-if="i.status?.status !== undefined">
             {{ i.status.status }}
+          </td>
+          <td v-for="kv in walkStatusConditions(i.status)" :title="kv.key">
+            {{ kv.status }}
           </td>
           <td>
             {{
