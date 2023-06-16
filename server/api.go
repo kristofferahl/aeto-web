@@ -14,7 +14,7 @@ import (
 )
 
 func addApiRoutes(s *Server, router *chi.Mux) {
-	restConfig, err := getRestConfig(s.InClusterConfig)
+	restConfig, err := getRestConfig(s.ClusterConfig)
 	if err != nil {
 		panic(err)
 	}

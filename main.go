@@ -20,7 +20,7 @@ func main() {
 	server := &server.Server{
 		EmbeddedFiles:     staticFiles,
 		EmbeddedFilesPath: "ui/dist",
-		InClusterConfig:   inClusterConfig,
+		ClusterConfig:     inClusterConfig,
 	}
 	server.Run()
 }

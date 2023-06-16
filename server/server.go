@@ -13,7 +13,7 @@ import (
 type Server struct {
 	EmbeddedFiles     embed.FS
 	EmbeddedFilesPath string
-	InClusterConfig   bool
+	ClusterConfig     bool
 }
 
 func (s *Server) Run() {
