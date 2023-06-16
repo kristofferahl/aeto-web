@@ -186,5 +186,16 @@ aside nav a.router-link-active > svg {
 .content .dashboard .card {
   background-color: #1f1f2b;
   padding: 2rem;
-  min-height: 20rem;
+}
+.content .dashboard .card.stats {
+  font-family: Poppins, sans-serif;
+}
+.content .dashboard .card.stats .stats-title {
+  font-size: 1.6rem;
+  font-weight: 500;
+}
+.content .dashboard .card.stats .stats-content {
+  color: white;
+  font-size: 4rem;
+  font-weight: 500;
 }

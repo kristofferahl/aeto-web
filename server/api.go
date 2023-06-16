@@ -30,6 +30,28 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 	router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.Timeout(60 * time.Second))
 
+		r.Get("/dashboard", func(w http.ResponseWriter, req *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+
+			tenants, err := client.CoreV1Alpha1(operatorNamespace).ListTenants()
+			if hasErr(w, err) {
+				return
+			}
+
+			dashboard := struct {
+				Tenants int `json:"tenants"`
+			}{
+				Tenants: len(tenants.Items),
+			}
+
+			data, err := json.Marshal(dashboard)
+			if hasErr(w, err) {
+				return
+			}
+
+			w.Write(data)
+		})
+
 		r.Get("/tenants", listResource(client, func() (interface{}, error) {
 			return client.CoreV1Alpha1(operatorNamespace).ListTenants()
 		}))
