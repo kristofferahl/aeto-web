@@ -39,9 +39,11 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 			}
 
 			dashboard := struct {
-				Tenants int `json:"tenants"`
+				Tenants int          `json:"tenants"`
+				Changes []CacheEvent `json:"changes"`
 			}{
 				Tenants: len(tenants.Items),
+				Changes: cache.changestream.TakeLast(15),
 			}
 
 			data, err := json.Marshal(dashboard)

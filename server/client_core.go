@@ -114,7 +114,7 @@ func (c *corev1Alpha1) Watch() error {
 				log.Println("Add", "resourcetemplates", fmt.Sprintf("error fetching resource %s/%s, err:", c.ns, u.GetName()), err)
 				return
 			}
-			cache.resourceTemplates.Add(u.GetUID(), result)
+			cache.resourceTemplates.Add(u.GetUID(), u.GetResourceVersion(), result)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			ou := oldObj.(*unstructured.Unstructured)
@@ -132,7 +132,7 @@ func (c *corev1Alpha1) Watch() error {
 				log.Println("Add", "resourcetemplates", fmt.Sprintf("error fetching resource %s/%s, err:", c.ns, nu.GetName()), err)
 				return
 			}
-			cache.resourceTemplates.Update(nu.GetUID(), result)
+			cache.resourceTemplates.Update(nu.GetUID(), nu.GetResourceVersion(), result)
 		},
 		DeleteFunc: func(obj interface{}) {
 			u := obj.(*unstructured.Unstructured)

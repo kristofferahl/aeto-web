@@ -13,7 +13,7 @@ import (
 	k8scache "k8s.io/client-go/tools/cache"
 )
 
-func Watch[T any](resource schema.GroupVersionResource, client dynamic.Interface, resourceFactory func() T, resourceCache ResourceCache[T]) error {
+func Watch[T CacheableEntry](resource schema.GroupVersionResource, client dynamic.Interface, resourceFactory func() T, resourceCache ResourceCache[T]) error {
 	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(client, time.Minute*5, "", nil)
 
 	informer := factory.ForResource(resource).Informer()
@@ -26,7 +26,7 @@ func Watch[T any](resource schema.GroupVersionResource, client dynamic.Interface
 			if err != nil {
 				log.Println(fmt.Sprintf("error converting to type %s", resource.Resource), err)
 			}
-			resourceCache.Add(u.GetUID(), r)
+			resourceCache.Add(u.GetUID(), u.GetResourceVersion(), r)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			ou := oldObj.(*unstructured.Unstructured)
@@ -37,7 +37,7 @@ func Watch[T any](resource schema.GroupVersionResource, client dynamic.Interface
 			if err != nil {
 				log.Println(fmt.Sprintf("error converting to type %s", resource.Resource), err)
 			}
-			resourceCache.Update(nu.GetUID(), r)
+			resourceCache.Update(nu.GetUID(), nu.GetResourceVersion(), r)
 		},
 		DeleteFunc: func(obj interface{}) {
 			u := obj.(*unstructured.Unstructured)
