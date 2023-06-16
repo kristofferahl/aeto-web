@@ -6,7 +6,7 @@ import (
 
 type AetoClient struct {
 	restConfig             *rest.Config
-	corev1Alpha1           *rest.RESTClient
+	corev1Alpha1           *CoreV1Alpha1Client
 	eventv1Alpha1          *rest.RESTClient
 	sustainabilityv1Alpha1 *rest.RESTClient
 	acmAwsV1Alpha1         *rest.RESTClient

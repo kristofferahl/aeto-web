@@ -4,7 +4,6 @@ import (
 	"context"
 
 	acmawsv1alpha1 "github.com/kristofferahl/aeto/apis/acm.aws/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -32,9 +31,9 @@ func (c *AetoClient) AcmAwsV1Alpha1(namespace string) AcmAwsV1Alpha1 {
 }
 
 type AcmAwsV1Alpha1 interface {
-	ListCertificates(opts metav1.ListOptions) (*acmawsv1alpha1.CertificateList, error)
+	ListCertificates() (*acmawsv1alpha1.CertificateList, error)
 	GetCertificate(name string) (*acmawsv1alpha1.Certificate, error)
-	ListCertificateConnectors(opts metav1.ListOptions) (*acmawsv1alpha1.CertificateConnectorList, error)
+	ListCertificateConnectors() (*acmawsv1alpha1.CertificateConnectorList, error)
 	GetCertificateConnector(name string) (*acmawsv1alpha1.CertificateConnector, error)
 }
 
@@ -43,7 +42,7 @@ type acmAwsV1Alpha1 struct {
 	ns         string
 }
 
-func (c *acmAwsV1Alpha1) ListCertificates(opts metav1.ListOptions) (*acmawsv1alpha1.CertificateList, error) {
+func (c *acmAwsV1Alpha1) ListCertificates() (*acmawsv1alpha1.CertificateList, error) {
 	result := acmawsv1alpha1.CertificateList{}
 	err := c.restClient.
 		Get().
@@ -70,7 +69,7 @@ func (c *acmAwsV1Alpha1) GetCertificate(name string) (*acmawsv1alpha1.Certificat
 	return &result, err
 }
 
-func (c *acmAwsV1Alpha1) ListCertificateConnectors(opts metav1.ListOptions) (*acmawsv1alpha1.CertificateConnectorList, error) {
+func (c *acmAwsV1Alpha1) ListCertificateConnectors() (*acmawsv1alpha1.CertificateConnectorList, error) {
 	result := acmawsv1alpha1.CertificateConnectorList{}
 	err := c.restClient.
 		Get().

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	eventv1alpha1 "github.com/kristofferahl/aeto/apis/event/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -32,7 +31,7 @@ func (c *AetoClient) EventV1Alpha1(namespace string) EventV1Alpha1 {
 }
 
 type EventV1Alpha1 interface {
-	ListEventStreamChunks(opts metav1.ListOptions) (*eventv1alpha1.EventStreamChunkList, error)
+	ListEventStreamChunks() (*eventv1alpha1.EventStreamChunkList, error)
 	GetEventStreamChunk(name string) (*eventv1alpha1.EventStreamChunk, error)
 }
 
@@ -41,7 +40,7 @@ type eventv1Alpha1 struct {
 	ns         string
 }
 
-func (c *eventv1Alpha1) ListEventStreamChunks(opts metav1.ListOptions) (*eventv1alpha1.EventStreamChunkList, error) {
+func (c *eventv1Alpha1) ListEventStreamChunks() (*eventv1alpha1.EventStreamChunkList, error) {
 	result := eventv1alpha1.EventStreamChunkList{}
 	err := c.restClient.
 		Get().

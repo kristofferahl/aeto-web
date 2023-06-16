@@ -4,7 +4,6 @@ import (
 	"context"
 
 	route53awsv1alpha1 "github.com/kristofferahl/aeto/apis/route53.aws/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -32,7 +31,7 @@ func (c *AetoClient) Route53AwsV1Alpha1(namespace string) Route53AwsV1Alpha1 {
 }
 
 type Route53AwsV1Alpha1 interface {
-	ListHostedZones(opts metav1.ListOptions) (*route53awsv1alpha1.HostedZoneList, error)
+	ListHostedZones() (*route53awsv1alpha1.HostedZoneList, error)
 	GetHostedZone(name string) (*route53awsv1alpha1.HostedZone, error)
 }
 
@@ -41,7 +40,7 @@ type route53AwsV1Alpha1 struct {
 	ns         string
 }
 
-func (c *route53AwsV1Alpha1) ListHostedZones(opts metav1.ListOptions) (*route53awsv1alpha1.HostedZoneList, error) {
+func (c *route53AwsV1Alpha1) ListHostedZones() (*route53awsv1alpha1.HostedZoneList, error) {
 	result := route53awsv1alpha1.HostedZoneList{}
 	err := c.restClient.
 		Get().

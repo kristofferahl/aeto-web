@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/teacat/jsonfilter"
@@ -24,66 +22,71 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 		panic(err)
 	}
 
+	// TODO: Make this configurable
+	operatorNamespace := "aeto"
+
+	client.CoreV1Alpha1(operatorNamespace).Watch()
+
 	router.Route("/api", func(r chi.Router) {
 		r.Use(middleware.Timeout(60 * time.Second))
 
 		r.Get("/tenants", listResource(client, func() (interface{}, error) {
-			return client.CoreV1Alpha1("aeto").ListTenants(v1.ListOptions{})
+			return client.CoreV1Alpha1(operatorNamespace).ListTenants()
 		}))
 		r.Get("/tenants/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.CoreV1Alpha1(namespace).GetTenant(name)
 		}))
 
 		r.Get("/blueprints", listResource(client, func() (interface{}, error) {
-			return client.CoreV1Alpha1("aeto").ListBlueprints(v1.ListOptions{})
+			return client.CoreV1Alpha1(operatorNamespace).ListBlueprints()
 		}))
 		r.Get("/blueprints/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.CoreV1Alpha1(namespace).GetBlueprint(name)
 		}))
 
 		r.Get("/resourcesets", listResource(client, func() (interface{}, error) {
-			return client.CoreV1Alpha1("aeto").ListResourceSets(v1.ListOptions{})
+			return client.CoreV1Alpha1(operatorNamespace).ListResourceSets()
 		}))
 		r.Get("/resourcesets/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.CoreV1Alpha1(namespace).GetResourceSet(name)
 		}))
 
 		r.Get("/resourcetemplates", listResource(client, func() (interface{}, error) {
-			return client.CoreV1Alpha1("aeto").ListResourceTemplates(v1.ListOptions{})
+			return client.CoreV1Alpha1(operatorNamespace).ListResourceTemplates()
 		}))
 		r.Get("/resourcetemplates/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.CoreV1Alpha1(namespace).GetResourceTemplate(name)
 		}))
 
 		r.Get("/eventstreamchunks", listResource(client, func() (interface{}, error) {
-			return client.EventV1Alpha1("aeto").ListEventStreamChunks(v1.ListOptions{})
+			return client.EventV1Alpha1(operatorNamespace).ListEventStreamChunks()
 		}))
 		r.Get("/eventstreamchunks/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.EventV1Alpha1(namespace).GetEventStreamChunk(name)
 		}))
 
 		r.Get("/savingspolicies", listResource(client, func() (interface{}, error) {
-			return client.SustainabilityV1Alpha1("aeto").ListSavingsPolicies(v1.ListOptions{})
+			return client.SustainabilityV1Alpha1(operatorNamespace).ListSavingsPolicies()
 		}))
 		r.Get("/savingspolicies/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.SustainabilityV1Alpha1(namespace).GetSavingsPolicy(name)
 		}))
 
 		r.Get("/certificates", listResource(client, func() (interface{}, error) {
-			return client.AcmAwsV1Alpha1("aeto").ListCertificates(v1.ListOptions{})
+			return client.AcmAwsV1Alpha1(operatorNamespace).ListCertificates()
 		}))
 		r.Get("/certificates/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.AcmAwsV1Alpha1(namespace).GetCertificate(name)
 		}))
 		r.Get("/certificateconnectors", listResource(client, func() (interface{}, error) {
-			return client.AcmAwsV1Alpha1("aeto").ListCertificateConnectors(v1.ListOptions{})
+			return client.AcmAwsV1Alpha1(operatorNamespace).ListCertificateConnectors()
 		}))
 		r.Get("/certificateconnectors/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.AcmAwsV1Alpha1(namespace).GetCertificateConnector(name)
 		}))
 
 		r.Get("/hostedzones", listResource(client, func() (interface{}, error) {
-			return client.Route53AwsV1Alpha1("aeto").ListHostedZones(v1.ListOptions{})
+			return client.Route53AwsV1Alpha1(operatorNamespace).ListHostedZones()
 		}))
 		r.Get("/hostedzones/{namespace}/{name}", getResource(client, func(namespace, name string) (interface{}, error) {
 			return client.Route53AwsV1Alpha1(namespace).GetHostedZone(name)

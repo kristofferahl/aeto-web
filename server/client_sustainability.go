@@ -4,7 +4,6 @@ import (
 	"context"
 
 	sustainabilityv1alpha1 "github.com/kristofferahl/aeto/apis/sustainability/v1alpha1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
@@ -32,7 +31,7 @@ func (c *AetoClient) SustainabilityV1Alpha1(namespace string) SustainabilityV1Al
 }
 
 type SustainabilityV1Alpha1 interface {
-	ListSavingsPolicies(opts metav1.ListOptions) (*sustainabilityv1alpha1.SavingsPolicyList, error)
+	ListSavingsPolicies() (*sustainabilityv1alpha1.SavingsPolicyList, error)
 	GetSavingsPolicy(name string) (*sustainabilityv1alpha1.SavingsPolicy, error)
 }
 
@@ -41,7 +40,7 @@ type sustainabilityV1Alpha1 struct {
 	ns         string
 }
 
-func (c *sustainabilityV1Alpha1) ListSavingsPolicies(opts metav1.ListOptions) (*sustainabilityv1alpha1.SavingsPolicyList, error) {
+func (c *sustainabilityV1Alpha1) ListSavingsPolicies() (*sustainabilityv1alpha1.SavingsPolicyList, error) {
 	result := sustainabilityv1alpha1.SavingsPolicyList{}
 	err := c.restClient.
 		Get().
