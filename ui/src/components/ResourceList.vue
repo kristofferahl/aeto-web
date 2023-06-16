@@ -102,7 +102,7 @@ export default {
           }
           let def = {
             label: capitalize(k),
-            format: (v) => s[k]
+            format: () => s[k]
           }
           return { ...def, ...override }
         })
@@ -132,8 +132,8 @@ export default {
     walkStatusConditions(s, format) {
       return s.conditions
         ? s.conditions
-            .map((c) => (format === true ? this.formatConditions(c) : c))
-            .filter((kv) => kv !== null)
+          .map((c) => (format === true ? this.formatConditions(c) : c))
+          .filter((kv) => kv !== null)
         : []
     },
     formatConditions(c) {
@@ -220,7 +220,7 @@ export default {
           <tr>
             <th colspan="2">Resource</th>
           </tr>
-          <tr v-for="f in walkResource(resource.spec, 'details')">
+          <tr v-for="f in walkResource(resource.spec, 'details')" :key="f.key">
             <td :title="f.key">{{ f.label }}</td>
             <td>
               <RouterLink v-if="f.linkTo" :to="`/${f.linkTo.toLowerCase()}/${f.value}`">{{
@@ -234,23 +234,27 @@ export default {
           <tr>
             <th colspan="2">Status</th>
           </tr>
-          <tr v-if="resource.status" v-for="f in walkStatus(resource.status, 'details')">
-            <td>{{ f.label }}</td>
-            <td>
-              <RouterLink v-if="f.linkTo" :to="`/${f.linkTo.toLowerCase()}/${f.value}`">{{
-                f.value
-              }}</RouterLink>
-              <pre v-else-if="f.pre">{{ f.value }}</pre>
-              <pre v-else-if="f.code" class="withcode"><code>{{ f.value }}</code></pre>
-              <span v-else>{{ f.value }}</span>
-            </td>
-          </tr>
+          <div v-if="resource.status">
+            <tr v-for="f in walkStatus(resource.status, 'details')" :key="f.label">
+              <td>{{ f.label }}</td>
+              <td>
+                <RouterLink v-if="f.linkTo" :to="`/${f.linkTo.toLowerCase()}/${f.value}`">{{
+                  f.value
+                }}</RouterLink>
+                <pre v-else-if="f.pre">{{ f.value }}</pre>
+                <pre v-else-if="f.code" class="withcode"><code>{{ f.value }}</code></pre>
+                <span v-else>{{ f.value }}</span>
+              </td>
+            </tr>
+          </div>
           <tr>
             <th colspan="2">Conditions</th>
           </tr>
-          <tr v-for="kv in walkStatusConditions(resource.status, true)">
+          <tr v-for="kv in walkStatusConditions(resource.status, true)" :key="kv.label">
             <td>{{ kv.label }}</td>
-            <td><pre v-html="kv.value"></pre></td>
+            <td>
+              <pre v-html="kv.value"></pre>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -262,7 +266,7 @@ export default {
           <tr>
             <th colspan="2">Metadata</th>
           </tr>
-          <tr v-for="kv in walkMetadata(resource.metadata)">
+          <tr v-for="kv in walkMetadata(resource.metadata)" :key="kv.label">
             <td>{{ kv.label }}</td>
             <td><span v-html="kv.value"></span></td>
           </tr>
@@ -275,25 +279,23 @@ export default {
       <thead>
         <tr>
           <th>Resource</th>
-          <th v-for="f in walkResource(items[0].spec, 'list')" :title="f.key">
+          <th v-for="f in walkResource(items[0].spec, 'list')" :key="f.key" :title="f.key">
             {{ f.label }}
           </th>
           <th v-if="items.some((i) => i.status?.status !== undefined)">Status</th>
-          <th v-for="h in statusConditionHeaders(items)">
+          <th v-for="(h, i) in statusConditionHeaders(items)" :key="i">
             {{ h }}
           </th>
           <th>Created</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="i in items">
+        <tr v-for="i in items" :key="i.metadata.uid">
           <td>
-            <RouterLink
-              :to="`/${resourceType.toLowerCase()}/${i.metadata.namespace}/${i.metadata.name}`"
-              >{{ i.metadata.namespace + '/' + i.metadata.name }}</RouterLink
-            >
+            <RouterLink :to="`/${resourceType.toLowerCase()}/${i.metadata.namespace}/${i.metadata.name}`">{{
+              i.metadata.namespace + '/' + i.metadata.name }}</RouterLink>
           </td>
-          <td v-for="f in walkResource(i.spec, 'list')">
+          <td v-for="(f, i) in walkResource(i.spec, 'list')" :key="i">
             <RouterLink v-if="f.linkTo" :to="`/${f.linkTo.toLowerCase()}/${f.value}`">{{
               f.value
             }}</RouterLink>
@@ -302,7 +304,7 @@ export default {
           <td v-if="i.status?.status !== undefined">
             {{ i.status.status }}
           </td>
-          <td v-for="kv in walkStatusConditions(i.status)" :title="kv.key">
+          <td v-for="kv in walkStatusConditions(i.status)" :title="kv.key" :key="kv.key">
             {{ kv.status }}
           </td>
           <td>
@@ -317,3 +319,5 @@ export default {
     </table>
   </div>
 </template>
+
+

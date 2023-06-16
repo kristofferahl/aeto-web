@@ -181,7 +181,7 @@ aside nav a.router-link-active > svg {
 }
 
 .content section.column {
-  overflow: scroll;
+  overflow: auto;
 }
 .content .dashboard .card {
   background-color: #1f1f2b;
