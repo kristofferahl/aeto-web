@@ -10,6 +10,23 @@ a {
   color: #83d8ae;
 }
 
+.button {
+  background-color: #948dce;
+  border-color: #948dce;
+}
+.button.button-outline,
+.button.button-clear {
+  color: #948dce;
+}
+
+/* Custom size */
+.button-small {
+  font-size: 0.9rem;
+  height: 2.8rem;
+  line-height: 2.8rem;
+  padding: 0 1.5rem;
+}
+
 table thead th,
 table tbody td,
 table tbody th {
@@ -150,16 +167,16 @@ aside nav a.router-link-active > svg {
   vertical-align: top;
 }
 
-.content table td pre {
+.content pre {
   background-color: #15151e;
   border-left-color: #83d8ae;
   margin: 0;
   padding: 0 0.5em;
 }
-.content table td pre.withcode {
+.content pre.withcode {
   border-left-color: #ada6f2;
 }
-.content table td pre code {
+.content pre code {
   background-color: #15151e;
 }
 

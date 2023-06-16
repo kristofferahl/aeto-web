@@ -21,7 +21,8 @@ export default {
     return {
       error: null,
       resource: null,
-      items: null
+      items: null,
+      viewRaw: false
     }
   },
   methods: {
@@ -118,6 +119,16 @@ export default {
           }
         })
     },
+    statusConditionHeaders(items) {
+      return [
+        ...new Set(
+          items
+            .filter((i) => i.status?.conditions)
+            .map((i) => i.status.conditions.map((c) => c.type))
+            .flat()
+        )
+      ]
+    },
     walkStatusConditions(s, format) {
       return s.conditions
         ? s.conditions
@@ -191,6 +202,18 @@ export default {
   <div v-if="!resource && !items && !error" class="loading">Loading...</div>
   <div v-if="error" class="error">{{ error }}</div>
   <div v-if="resource" class="details row">
+    <section class="column">
+      <button @click="viewRaw = !viewRaw" class="button button-small">
+        {{ viewRaw ? 'View normal' : 'View raw' }}
+      </button>
+    </section>
+  </div>
+  <div v-if="resource && viewRaw" class="details row">
+    <section class="column">
+      <pre>{{ resource }}</pre>
+    </section>
+  </div>
+  <div v-if="resource && !viewRaw" class="details row">
     <section class="column column-75">
       <table>
         <tbody>
@@ -256,8 +279,8 @@ export default {
             {{ f.label }}
           </th>
           <th v-if="items.some((i) => i.status?.status !== undefined)">Status</th>
-          <th v-for="kv in walkStatusConditions(items[0].status)">
-            {{ kv.type }}
+          <th v-for="h in statusConditionHeaders(items)">
+            {{ h }}
           </th>
           <th>Created</th>
         </tr>
