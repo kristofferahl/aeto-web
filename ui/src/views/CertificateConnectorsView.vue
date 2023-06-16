@@ -1,6 +1,6 @@
 <script setup>
 import { setBlockTracking } from 'vue'
-import Resources from '../components/Resources.vue'
+import Resources from '../components/ResourceList.vue'
 </script>
 
 <script>

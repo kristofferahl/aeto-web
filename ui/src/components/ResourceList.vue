@@ -132,8 +132,8 @@ export default {
     walkStatusConditions(s, format) {
       return s.conditions
         ? s.conditions
-          .map((c) => (format === true ? this.formatConditions(c) : c))
-          .filter((kv) => kv !== null)
+            .map((c) => (format === true ? this.formatConditions(c) : c))
+            .filter((kv) => kv !== null)
         : []
     },
     formatConditions(c) {
@@ -292,8 +292,10 @@ export default {
       <tbody>
         <tr v-for="i in items" :key="i.metadata.uid">
           <td>
-            <RouterLink :to="`/${resourceType.toLowerCase()}/${i.metadata.namespace}/${i.metadata.name}`">{{
-              i.metadata.namespace + '/' + i.metadata.name }}</RouterLink>
+            <RouterLink
+              :to="`/${resourceType.toLowerCase()}/${i.metadata.namespace}/${i.metadata.name}`"
+              >{{ i.metadata.namespace + '/' + i.metadata.name }}</RouterLink
+            >
           </td>
           <td v-for="(f, i) in walkResource(i.spec, 'list')" :key="i">
             <RouterLink v-if="f.linkTo" :to="`/${f.linkTo.toLowerCase()}/${f.value}`">{{
@@ -319,5 +321,3 @@ export default {
     </table>
   </div>
 </template>
-
-
