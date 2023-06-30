@@ -8,7 +8,10 @@ import (
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/kristofferahl/aeto-web/server/sse"
 )
+
+var eventManager *sse.EventManager
 
 type Server struct {
 	EmbeddedFiles     embed.FS
@@ -26,7 +29,7 @@ func (s *Server) Run() {
 	r.Use(middleware.Heartbeat("/health"))
 
 	addUiRoutes(s, r)
-	addApiRoutes(s, r)
+	addApiRoutes(s, r, eventManager)
 
 	log.Println("aeto server is listening on port 9000...")
 	err := http.ListenAndServe(":9000", r)
@@ -42,4 +45,8 @@ func (s *Server) getAssets() fs.FS {
 		panic(err)
 	}
 	return f
+}
+
+func init() {
+	eventManager = sse.NewEventManager()
 }

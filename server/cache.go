@@ -6,6 +6,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/kristofferahl/aeto-web/server/sse"
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -111,6 +112,10 @@ func (s Cache[T]) Add(id types.UID, version string, obj T) {
 		Type:     reflect.TypeOf(obj).Name(),
 		Resource: obj.NamespacedName().String(),
 	})
+	eventManager.Publish("change", sse.Event{
+		Type:    "ResourceAdded",
+		Payload: obj,
+	})
 }
 
 func (s Cache[T]) Update(id types.UID, newVersion string, obj T) {
@@ -128,6 +133,10 @@ func (s Cache[T]) Update(id types.UID, newVersion string, obj T) {
 			Type:     reflect.TypeOf(obj).Name(),
 			Resource: obj.NamespacedName().String(),
 		})
+		eventManager.Publish("change", sse.Event{
+			Type:    "ResourceChanged",
+			Payload: obj,
+		})
 	}
 }
 
@@ -141,6 +150,10 @@ func (s Cache[T]) Delete(id types.UID) {
 		Change:   "Deleted",
 		Type:     reflect.TypeOf(obj).Name(),
 		Resource: obj.Resource.NamespacedName().String(),
+	})
+	eventManager.Publish("change", sse.Event{
+		Type:    "ResourceDeleted",
+		Payload: obj,
 	})
 }
 

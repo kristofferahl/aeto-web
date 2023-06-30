@@ -7,7 +7,8 @@ export default {
   data() {
     return {
       error: null,
-      dashboard: {}
+      dashboard: {},
+      source: null
     }
   },
   methods: {
@@ -26,6 +27,15 @@ export default {
 
   mounted() {
     this.fetchData()
+    this.source = new EventSource('/api/sse')
+    this.source.onmessage = (e) => {
+      console.log('Server sent event:')
+      console.log(e)
+    }
+    this.source.onerror = (err) => {
+      console.error(err)
+      this.source.close()
+    }
   }
 }
 </script>
@@ -44,7 +54,11 @@ export default {
         <div class="card">
           <h3>Resource Changes</h3>
           <ul>
-            <li v-for="c in dashboard.changes">{{ c.change }} {{ c.type }} {{ c.resource }} ({{ formatDistance(parseISO(c.ts), new Date(), { addSuffix: true }) }})</li>
+            <li v-for="c in dashboard.changes">
+              {{ c.change }} {{ c.type }} {{ c.resource }} ({{
+                formatDistance(parseISO(c.ts), new Date(), { addSuffix: true })
+              }})
+            </li>
           </ul>
         </div>
       </div>

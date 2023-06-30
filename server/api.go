@@ -8,10 +8,11 @@ import (
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/kristofferahl/aeto-web/server/sse"
 	"github.com/teacat/jsonfilter"
 )
 
-func addApiRoutes(s *Server, router *chi.Mux) {
+func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 	restConfig, err := getRestConfig(s.ClusterConfig)
 	if err != nil {
 		panic(err)
@@ -28,7 +29,11 @@ func addApiRoutes(s *Server, router *chi.Mux) {
 	client.CoreV1Alpha1(operatorNamespace).Watch()
 
 	router.Route("/api", func(r chi.Router) {
-		r.Use(middleware.Timeout(60 * time.Second))
+		r.Use(middleware.Timeout(5 * time.Minute))
+
+		r.Get("/sse", func(w http.ResponseWriter, r *http.Request) {
+			sse.HandleSSE(em, w, r)
+		})
 
 		r.Get("/dashboard", func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
