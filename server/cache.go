@@ -2,9 +2,6 @@ package server
 
 import (
 	"fmt"
-	"reflect"
-	"sort"
-	"time"
 
 	"github.com/kristofferahl/aeto-web/server/sse"
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
@@ -13,11 +10,6 @@ import (
 
 var (
 	cache = &InMemoryCache{
-		changestream: &ChangeStream{
-			recordAfter: time.Now().UTC().Add(1 * time.Minute),
-			maxEvents:   10,
-			events:      make([]CacheEvent, 0),
-		},
 		tenant: &Cache[corev1alpha1.Tenant]{
 			data: make(map[string]CacheEntry[corev1alpha1.Tenant]),
 		},
@@ -34,41 +26,10 @@ var (
 )
 
 type InMemoryCache struct {
-	changestream      *ChangeStream
 	tenant            ResourceCache[corev1alpha1.Tenant]
 	blueprint         ResourceCache[corev1alpha1.Blueprint]
 	resourceSets      ResourceCache[corev1alpha1.ResourceSet]
 	resourceTemplates ResourceCache[corev1alpha1.ResourceTemplate]
-}
-
-type ChangeStream struct {
-	recordAfter time.Time
-	maxEvents   int
-	events      []CacheEvent
-}
-
-func (s *ChangeStream) AddEvent(e CacheEvent) {
-	now := time.Now().UTC()
-	if now.After(s.recordAfter) {
-		e.time = now
-		e.Timestamp = e.time.Format(time.RFC3339)
-		s.events = append(s.events, e)
-		if len(s.events) > s.maxEvents {
-			s.events = s.events[len(s.events)-s.maxEvents:] // Remove older events
-		}
-	}
-}
-
-func (s *ChangeStream) TakeLast(n int) []CacheEvent {
-	changes := cache.changestream
-	sort.Slice(changes.events, func(i, j int) bool {
-		return changes.events[i].time.Before(changes.events[j].time)
-	})
-	ne := len(changes.events)
-	if n > ne {
-		n = ne
-	}
-	return changes.events[ne-n:]
 }
 
 type ResourceCache[T CacheableEntry] interface {
@@ -95,7 +56,6 @@ type CacheEvent struct {
 	Type      string `json:"type"`
 	Resource  string `json:"resource"`
 	Change    string `json:"change"`
-	time      time.Time
 	Timestamp string `json:"ts"`
 }
 
@@ -107,11 +67,6 @@ func (s Cache[T]) Add(id types.UID, version string, obj T) {
 		Version:  version,
 		Resource: obj,
 	}
-	cache.changestream.AddEvent(CacheEvent{
-		Change:   "Added",
-		Type:     reflect.TypeOf(obj).Name(),
-		Resource: obj.NamespacedName().String(),
-	})
 	eventManager.Publish("change", sse.Event{
 		Type:    "ResourceAdded",
 		Payload: obj,
@@ -128,13 +83,8 @@ func (s Cache[T]) Update(id types.UID, newVersion string, obj T) {
 			Version:  newVersion,
 			Resource: obj,
 		}
-		cache.changestream.AddEvent(CacheEvent{
-			Change:   "Updated",
-			Type:     reflect.TypeOf(obj).Name(),
-			Resource: obj.NamespacedName().String(),
-		})
 		eventManager.Publish("change", sse.Event{
-			Type:    "ResourceChanged",
+			Type:    "ResourceUpdated",
 			Payload: obj,
 		})
 	}
@@ -146,11 +96,6 @@ func (s Cache[T]) Delete(id types.UID) {
 	}
 	obj := s.data[string(id)]
 	delete(s.data, string(id))
-	cache.changestream.AddEvent(CacheEvent{
-		Change:   "Deleted",
-		Type:     reflect.TypeOf(obj).Name(),
-		Resource: obj.Resource.NamespacedName().String(),
-	})
 	eventManager.Publish("change", sse.Event{
 		Type:    "ResourceDeleted",
 		Payload: obj,

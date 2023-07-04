@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.8
+	github.com/google/uuid v1.1.2
 	github.com/kristofferahl/aeto v0.2.1
 	github.com/teacat/jsonfilter v0.0.0-20210909033008-ce10fc951871
 	k8s.io/apimachinery v0.23.5

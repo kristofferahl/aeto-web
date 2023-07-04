@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func HandleSSE(em *EventManager, w http.ResponseWriter, r *http.Request) {
@@ -15,13 +17,18 @@ func HandleSSE(em *EventManager, w http.ResponseWriter, r *http.Request) {
 	// w.Header().Set("Access-Control-Allow-Origin", "*")
 	// w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-	log.Println("/sse, establishing connection")
+	cid := r.URL.Query().Get("cid")
+	if len(cid) == 0 {
+		cid = string(uuid.New().String())[0:8]
+	}
+
+	log.Println("/sse, establishing connection", cid)
 
 	ch := make(chan Event)
 	em.Subscribe("change", ch)
 
 	defer func() {
-		log.Println("/sse, connection closing")
+		log.Println("/sse, exiting handler, connection closed", cid)
 		em.Unsubscribe("change", ch)
 		close(ch)
 	}()
@@ -29,26 +36,25 @@ func HandleSSE(em *EventManager, w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case event := <-ch:
-			// Send the event to the SSE client
-			b, err := json.Marshal(event.Payload)
+			log.Println("sse, write event to stream", cid)
+			b, err := json.Marshal(event)
 			if err != nil {
-				log.Println("/sse, error writing doing marshalling")
+				log.Println("sse, error writing doing marshalling", cid)
 				continue
 			}
 			eventData := fmt.Sprintf("data: %s\n\n", string(b))
 
 			_, err = w.Write([]byte(eventData))
 			if err != nil {
-				// Handle error
-				log.Println("/sse, error writing to responseWriter")
+				log.Println("sse, error writing to http.ResponseWriter", cid)
 				continue
 			}
 
-			// if f, ok := w.(http.Flusher); ok {
-			// 	f.Flush()
-			// }
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
 		case <-r.Context().Done():
-			log.Println("Context done")
+			log.Println("http request closed", cid)
 			return
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -98,6 +99,13 @@ func (c *corev1Alpha1) Watch() error {
 		return err
 	}
 
+	applyResourceTemplateTypeMeta := func(rt *corev1alpha1.ResourceTemplate) {
+		rt.TypeMeta = metav1.TypeMeta{
+			Kind:       "ResourceTemplate",
+			APIVersion: corev1alpha1.GroupVersion.Identifier(),
+		}
+	}
+
 	if err := NewWatcher(corev1alpha1.GroupVersion.WithResource("resourcetemplates"), c.client.Dynamic, k8scache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			u := obj.(*unstructured.Unstructured)
@@ -114,6 +122,7 @@ func (c *corev1Alpha1) Watch() error {
 				log.Println("Add", "resourcetemplates", fmt.Sprintf("error fetching resource %s/%s, err:", c.ns, u.GetName()), err)
 				return
 			}
+			applyResourceTemplateTypeMeta(&result)
 			cache.resourceTemplates.Add(u.GetUID(), u.GetResourceVersion(), result)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
@@ -132,6 +141,7 @@ func (c *corev1Alpha1) Watch() error {
 				log.Println("Add", "resourcetemplates", fmt.Sprintf("error fetching resource %s/%s, err:", c.ns, nu.GetName()), err)
 				return
 			}
+			applyResourceTemplateTypeMeta(&result)
 			cache.resourceTemplates.Update(nu.GetUID(), nu.GetResourceVersion(), result)
 		},
 		DeleteFunc: func(obj interface{}) {

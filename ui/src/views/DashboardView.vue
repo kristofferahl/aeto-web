@@ -3,11 +3,24 @@ import { parseISO, formatDistance } from 'date-fns'
 </script>
 
 <script>
+function uuidv4() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+function prepend(a, v) {
+  var na = a.slice();
+  na.unshift(v);
+  return na;
+}
+
 export default {
   data() {
     return {
       error: null,
       dashboard: {},
+      eventstream: [],
       source: null
     }
   },
@@ -27,15 +40,20 @@ export default {
 
   mounted() {
     this.fetchData()
-    this.source = new EventSource('/api/sse')
+    this.source = new EventSource('/api/sse?cid='+uuidv4().substring(0,6))
+    console.log('Connecting to server')
     this.source.onmessage = (e) => {
-      console.log('Server sent event:')
-      console.log(e)
+      console.log('New event', e)
+      this.eventstream = prepend(this.eventstream, JSON.parse(e.data))
     }
     this.source.onerror = (err) => {
-      console.error(err)
+      console.error('Error', err)
       this.source.close()
     }
+  },
+  beforeUnmount() {
+    console.log('Disconnecting from server')
+    this.source.close()
   }
 }
 </script>
@@ -54,10 +72,20 @@ export default {
         <div class="card">
           <h3>Resource Changes</h3>
           <ul>
-            <li v-for="c in dashboard.changes">
-              {{ c.change }} {{ c.type }} {{ c.resource }} ({{
-                formatDistance(parseISO(c.ts), new Date(), { addSuffix: true })
-              }})
+            <li v-for="c in eventstream">
+              <span v-if="c.payload.apiVersion !== '' && c.payload.metadata">
+                {{ c.type }}<br />
+                {{ c.payload.apiVersion }}/{{ c.payload.kind }}<br />
+                {{ c.payload.metadata.namespace }}/{{ c.payload.metadata.name }}<br />
+                ({{
+                  formatDistance(parseISO(c.ts), new Date(), { addSuffix: true })
+                }})
+              </span>
+              <span v-else>
+                {{ c.type }} {{ c.payload }} ({{
+                  formatDistance(parseISO(c.ts), new Date(), { addSuffix: true })
+                }})
+              </span>
             </li>
           </ul>
         </div>

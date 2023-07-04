@@ -1,10 +1,15 @@
 package sse
 
-import "sync"
+import (
+	"log"
+	"sync"
+	"time"
+)
 
 type Event struct {
-	Type    string      // Type of the event
-	Payload interface{} // Event data payload
+	Type      string      `json:"type"`    // Type of the event
+	Payload   interface{} `json:"payload"` // Event data payload
+	Timestamp string      `json:"ts"`
 }
 
 type EventManager struct {
@@ -19,6 +24,7 @@ func NewEventManager() *EventManager {
 }
 
 func (em *EventManager) Subscribe(eventType string, ch chan<- Event) {
+	log.Println("subscribing to", eventType)
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
@@ -32,6 +38,7 @@ func (em *EventManager) Subscribe(eventType string, ch chan<- Event) {
 }
 
 func (em *EventManager) Unsubscribe(eventType string, ch chan<- Event) {
+	log.Println("unsubscribing from", eventType)
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
@@ -46,6 +53,7 @@ func (em *EventManager) Unsubscribe(eventType string, ch chan<- Event) {
 func (em *EventManager) Publish(eventType string, event Event) {
 	em.mu.Lock()
 	defer em.mu.Unlock()
+	event.Timestamp = time.Now().UTC().Format(time.RFC3339)
 
 	if subscribers, ok := em.subscribers[eventType]; ok {
 		for ch := range subscribers {

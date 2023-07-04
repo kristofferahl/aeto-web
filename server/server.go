@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
@@ -47,6 +48,16 @@ func (s *Server) getAssets() fs.FS {
 	return f
 }
 
+func publishKeepAlive() {
+	eventManager.Publish("change", sse.Event{
+		Type:    "KeepAlive",
+		Payload: struct{}{},
+	})
+	time.Sleep(15 * time.Second)
+	go publishKeepAlive()
+}
+
 func init() {
 	eventManager = sse.NewEventManager()
+	go publishKeepAlive()
 }

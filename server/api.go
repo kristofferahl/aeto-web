@@ -28,12 +28,16 @@ func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 
 	client.CoreV1Alpha1(operatorNamespace).Watch()
 
-	router.Route("/api", func(r chi.Router) {
-		r.Use(middleware.Timeout(5 * time.Minute))
+	router.Group(func(r chi.Router) {
+		// r.Use(middleware.Timeout(10 * time.Second))
 
-		r.Get("/sse", func(w http.ResponseWriter, r *http.Request) {
+		r.Get("/api/sse", func(w http.ResponseWriter, r *http.Request) {
 			sse.HandleSSE(em, w, r)
 		})
+	})
+
+	router.Route("/api", func(r chi.Router) {
+		r.Use(middleware.Timeout(2 * time.Second))
 
 		r.Get("/dashboard", func(w http.ResponseWriter, req *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -44,11 +48,9 @@ func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 			}
 
 			dashboard := struct {
-				Tenants int          `json:"tenants"`
-				Changes []CacheEvent `json:"changes"`
+				Tenants int `json:"tenants"`
 			}{
 				Tenants: len(tenants.Items),
-				Changes: cache.changestream.TakeLast(15),
 			}
 
 			data, err := json.Marshal(dashboard)

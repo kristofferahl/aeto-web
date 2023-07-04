@@ -199,3 +199,6 @@ aside nav a.router-link-active > svg {
   font-size: 4rem;
   font-weight: 500;
 }
+.content .dashboard ul {
+  list-style-position: outside;
+}
