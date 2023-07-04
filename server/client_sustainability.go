@@ -1,14 +1,16 @@
 package server
 
 import (
-	"context"
+	"sort"
+	"strings"
 
 	sustainabilityv1alpha1 "github.com/kristofferahl/aeto/apis/sustainability/v1alpha1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
-func (c *AetoClient) NewSustainabilityV1Alpha1Client() (*rest.RESTClient, error) {
+func (c *AetoClient) NewSustainabilityV1Alpha1Client() (*KubernetesClient, error) {
 	config := *c.restConfig
 	config.ContentConfig.GroupVersion = &sustainabilityv1alpha1.GroupVersion
 	config.APIPath = "/apis"
@@ -20,49 +22,66 @@ func (c *AetoClient) NewSustainabilityV1Alpha1Client() (*rest.RESTClient, error)
 		return nil, err
 	}
 
-	return client, nil
+	dynamicClient, err := dynamic.NewForConfigAndClient(&config, client.Client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &KubernetesClient{
+		REST:    client,
+		Dynamic: dynamicClient,
+	}, nil
 }
 
 func (c *AetoClient) SustainabilityV1Alpha1(namespace string) SustainabilityV1Alpha1 {
 	return &sustainabilityV1Alpha1{
-		restClient: c.sustainabilityv1Alpha1,
-		ns:         namespace,
+		client: c.sustainabilityv1Alpha1,
+		ns:     namespace,
 	}
 }
 
 type SustainabilityV1Alpha1 interface {
-	ListSavingsPolicies() (*sustainabilityv1alpha1.SavingsPolicyList, error)
+	Watch() error
+	ListSavingsPolicies(filters ...func(i sustainabilityv1alpha1.SavingsPolicy) bool) (*sustainabilityv1alpha1.SavingsPolicyList, error)
 	GetSavingsPolicy(name string) (*sustainabilityv1alpha1.SavingsPolicy, error)
 }
 
 type sustainabilityV1Alpha1 struct {
-	restClient rest.Interface
-	ns         string
+	client *KubernetesClient
+	ns     string
 }
 
-func (c *sustainabilityV1Alpha1) ListSavingsPolicies() (*sustainabilityv1alpha1.SavingsPolicyList, error) {
-	result := sustainabilityv1alpha1.SavingsPolicyList{}
-	err := c.restClient.
-		Get().
-		Namespace(c.ns).
-		Resource("savingspolicies").
-		//VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.Background()).
-		Into(&result)
+func (c *sustainabilityV1Alpha1) Watch() error {
+	if err := Watch(
+		sustainabilityv1alpha1.GroupVersion.WithResource("savingspolicies"),
+		c.client.Dynamic,
+		func() sustainabilityv1alpha1.SavingsPolicy {
+			return sustainabilityv1alpha1.SavingsPolicy{}
+		},
+		cache.sustainabilitySavingsPolicy); err != nil {
+		return err
+	}
+	return nil
+}
 
-	return &result, err
+func (c *sustainabilityV1Alpha1) ListSavingsPolicies(filters ...func(i sustainabilityv1alpha1.SavingsPolicy) bool) (*sustainabilityv1alpha1.SavingsPolicyList, error) {
+	result := sustainabilityv1alpha1.SavingsPolicyList{}
+
+	filters = append(filters, func(i sustainabilityv1alpha1.SavingsPolicy) bool {
+		return i.GetNamespace() == c.ns
+	})
+	result.Items = cache.sustainabilitySavingsPolicy.Items(filters...)
+
+	sort.Slice(result.Items, func(i, j int) bool {
+		return strings.Compare(result.Items[i].NamespacedName().String(), result.Items[j].NamespacedName().String()) == -1
+	})
+
+	return &result, nil
 }
 
 func (c *sustainabilityV1Alpha1) GetSavingsPolicy(name string) (*sustainabilityv1alpha1.SavingsPolicy, error) {
-	result := sustainabilityv1alpha1.SavingsPolicy{}
-	err := c.restClient.
-		Get().
-		Namespace(c.ns).
-		Name(name).
-		Resource("savingspolicies").
-		//VersionedParams(&opts, scheme.ParameterCodec).
-		Do(context.Background()).
-		Into(&result)
-
-	return &result, err
+	result, err := c.ListSavingsPolicies(func(i sustainabilityv1alpha1.SavingsPolicy) bool {
+		return i.Name == name
+	})
+	return one(result.Items, err, &sustainabilityv1alpha1.SavingsPolicy{})
 }

@@ -4,32 +4,64 @@ import (
 	"fmt"
 
 	"github.com/kristofferahl/aeto-web/server/sse"
+	acmawsv1alpa1 "github.com/kristofferahl/aeto/apis/acm.aws/v1alpha1"
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
+	eventv1alpha1 "github.com/kristofferahl/aeto/apis/event/v1alpha1"
+	route53awsv1alpha1 "github.com/kristofferahl/aeto/apis/route53.aws/v1alpha1"
+	sustainabilityv1alpha1 "github.com/kristofferahl/aeto/apis/sustainability/v1alpha1"
 	"k8s.io/apimachinery/pkg/types"
 )
 
 var (
 	cache = &InMemoryCache{
-		tenant: &Cache[corev1alpha1.Tenant]{
+		acmawsCertificate: &Cache[acmawsv1alpa1.Certificate]{
+			data: make(map[string]CacheEntry[acmawsv1alpa1.Certificate]),
+		},
+		acmawsCertificateConnector: &Cache[acmawsv1alpa1.CertificateConnector]{
+			data: make(map[string]CacheEntry[acmawsv1alpa1.CertificateConnector]),
+		},
+
+		coreTenant: &Cache[corev1alpha1.Tenant]{
 			data: make(map[string]CacheEntry[corev1alpha1.Tenant]),
 		},
-		blueprint: &Cache[corev1alpha1.Blueprint]{
+		coreBlueprint: &Cache[corev1alpha1.Blueprint]{
 			data: make(map[string]CacheEntry[corev1alpha1.Blueprint]),
 		},
-		resourceSets: &Cache[corev1alpha1.ResourceSet]{
+		coreResourceSet: &Cache[corev1alpha1.ResourceSet]{
 			data: make(map[string]CacheEntry[corev1alpha1.ResourceSet]),
 		},
-		resourceTemplates: &Cache[corev1alpha1.ResourceTemplate]{
+		coreResourceTemplate: &Cache[corev1alpha1.ResourceTemplate]{
 			data: make(map[string]CacheEntry[corev1alpha1.ResourceTemplate]),
+		},
+
+		eventEventStreamChunk: &Cache[eventv1alpha1.EventStreamChunk]{
+			data: make(map[string]CacheEntry[eventv1alpha1.EventStreamChunk]),
+		},
+
+		route53awsHostedZone: &Cache[route53awsv1alpha1.HostedZone]{
+			data: make(map[string]CacheEntry[route53awsv1alpha1.HostedZone]),
+		},
+
+		sustainabilitySavingsPolicy: &Cache[sustainabilityv1alpha1.SavingsPolicy]{
+			data: make(map[string]CacheEntry[sustainabilityv1alpha1.SavingsPolicy]),
 		},
 	}
 )
 
 type InMemoryCache struct {
-	tenant            ResourceCache[corev1alpha1.Tenant]
-	blueprint         ResourceCache[corev1alpha1.Blueprint]
-	resourceSets      ResourceCache[corev1alpha1.ResourceSet]
-	resourceTemplates ResourceCache[corev1alpha1.ResourceTemplate]
+	acmawsCertificate          ResourceCache[acmawsv1alpa1.Certificate]
+	acmawsCertificateConnector ResourceCache[acmawsv1alpa1.CertificateConnector]
+
+	coreTenant           ResourceCache[corev1alpha1.Tenant]
+	coreBlueprint        ResourceCache[corev1alpha1.Blueprint]
+	coreResourceSet      ResourceCache[corev1alpha1.ResourceSet]
+	coreResourceTemplate ResourceCache[corev1alpha1.ResourceTemplate]
+
+	eventEventStreamChunk ResourceCache[eventv1alpha1.EventStreamChunk]
+
+	route53awsHostedZone ResourceCache[route53awsv1alpha1.HostedZone]
+
+	sustainabilitySavingsPolicy ResourceCache[sustainabilityv1alpha1.SavingsPolicy]
 }
 
 type ResourceCache[T CacheableEntry] interface {

@@ -1,16 +1,17 @@
 package server
 
 import (
+	"k8s.io/client-go/dynamic"
 	rest "k8s.io/client-go/rest"
 )
 
 type AetoClient struct {
 	restConfig             *rest.Config
-	corev1Alpha1           *CoreV1Alpha1Client
-	eventv1Alpha1          *rest.RESTClient
-	sustainabilityv1Alpha1 *rest.RESTClient
-	acmAwsV1Alpha1         *rest.RESTClient
-	route53AwsV1Alpha1     *rest.RESTClient
+	corev1Alpha1           *KubernetesClient
+	eventv1Alpha1          *KubernetesClient
+	sustainabilityv1Alpha1 *KubernetesClient
+	acmAwsV1Alpha1         *KubernetesClient
+	route53AwsV1Alpha1     *KubernetesClient
 }
 
 func NewForConfig(c *rest.Config) (*AetoClient, error) {
@@ -51,4 +52,9 @@ func NewForConfig(c *rest.Config) (*AetoClient, error) {
 		acmAwsV1Alpha1:         acmAwsV1Alpha1Client,
 		route53AwsV1Alpha1:     route53AwsV1Alpha1Client,
 	}, nil
+}
+
+type KubernetesClient struct {
+	REST    *rest.RESTClient
+	Dynamic dynamic.Interface
 }

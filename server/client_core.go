@@ -16,12 +16,7 @@ import (
 	k8scache "k8s.io/client-go/tools/cache"
 )
 
-type CoreV1Alpha1Client struct {
-	REST    *rest.RESTClient
-	Dynamic dynamic.Interface
-}
-
-func (c *AetoClient) NewCoreV1Alpha1Client() (*CoreV1Alpha1Client, error) {
+func (c *AetoClient) NewCoreV1Alpha1Client() (*KubernetesClient, error) {
 	config := *c.restConfig
 	config.ContentConfig.GroupVersion = &corev1alpha1.GroupVersion
 	config.APIPath = "/apis"
@@ -38,7 +33,7 @@ func (c *AetoClient) NewCoreV1Alpha1Client() (*CoreV1Alpha1Client, error) {
 		return nil, err
 	}
 
-	return &CoreV1Alpha1Client{
+	return &KubernetesClient{
 		REST:    client,
 		Dynamic: dynamicClient,
 	}, nil
@@ -64,7 +59,7 @@ type CoreV1Alpha1 interface {
 }
 
 type corev1Alpha1 struct {
-	client *CoreV1Alpha1Client
+	client *KubernetesClient
 	ns     string
 }
 
@@ -75,7 +70,7 @@ func (c *corev1Alpha1) Watch() error {
 		func() corev1alpha1.Tenant {
 			return corev1alpha1.Tenant{}
 		},
-		cache.tenant); err != nil {
+		cache.coreTenant); err != nil {
 		return err
 	}
 
@@ -85,7 +80,7 @@ func (c *corev1Alpha1) Watch() error {
 		func() corev1alpha1.Blueprint {
 			return corev1alpha1.Blueprint{}
 		},
-		cache.blueprint); err != nil {
+		cache.coreBlueprint); err != nil {
 		return err
 	}
 
@@ -95,7 +90,7 @@ func (c *corev1Alpha1) Watch() error {
 		func() corev1alpha1.ResourceSet {
 			return corev1alpha1.ResourceSet{}
 		},
-		cache.resourceSets); err != nil {
+		cache.coreResourceSet); err != nil {
 		return err
 	}
 
@@ -123,7 +118,7 @@ func (c *corev1Alpha1) Watch() error {
 				return
 			}
 			applyResourceTemplateTypeMeta(&result)
-			cache.resourceTemplates.Add(u.GetUID(), u.GetResourceVersion(), result)
+			cache.coreResourceTemplate.Add(u.GetUID(), u.GetResourceVersion(), result)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			ou := oldObj.(*unstructured.Unstructured)
@@ -142,12 +137,12 @@ func (c *corev1Alpha1) Watch() error {
 				return
 			}
 			applyResourceTemplateTypeMeta(&result)
-			cache.resourceTemplates.Update(nu.GetUID(), nu.GetResourceVersion(), result)
+			cache.coreResourceTemplate.Update(nu.GetUID(), nu.GetResourceVersion(), result)
 		},
 		DeleteFunc: func(obj interface{}) {
 			u := obj.(*unstructured.Unstructured)
 			log.Println("Delete", "resourcetemplates", u.GetUID())
-			cache.resourceTemplates.Delete(u.GetUID())
+			cache.coreResourceTemplate.Delete(u.GetUID())
 		},
 	}); err != nil {
 		return err
@@ -162,7 +157,7 @@ func (c *corev1Alpha1) ListTenants(filters ...func(i corev1alpha1.Tenant) bool) 
 	filters = append(filters, func(i corev1alpha1.Tenant) bool {
 		return i.GetNamespace() == c.ns
 	})
-	result.Items = cache.tenant.Items(filters...)
+	result.Items = cache.coreTenant.Items(filters...)
 
 	sort.Slice(result.Items, func(i, j int) bool {
 		return strings.Compare(result.Items[i].NamespacedName().String(), result.Items[j].NamespacedName().String()) == -1
@@ -184,7 +179,7 @@ func (c *corev1Alpha1) ListBlueprints(filters ...func(i corev1alpha1.Blueprint) 
 	filters = append(filters, func(i corev1alpha1.Blueprint) bool {
 		return i.Namespace == c.ns
 	})
-	result.Items = cache.blueprint.Items(filters...)
+	result.Items = cache.coreBlueprint.Items(filters...)
 
 	sort.Slice(result.Items, func(i, j int) bool {
 		return strings.Compare(result.Items[i].NamespacedName().String(), result.Items[j].NamespacedName().String()) == -1
@@ -206,7 +201,7 @@ func (c *corev1Alpha1) ListResourceSets(filters ...func(i corev1alpha1.ResourceS
 	filters = append(filters, func(i corev1alpha1.ResourceSet) bool {
 		return i.GetNamespace() == c.ns
 	})
-	result.Items = cache.resourceSets.Items(filters...)
+	result.Items = cache.coreResourceSet.Items(filters...)
 
 	sort.Slice(result.Items, func(i, j int) bool {
 		return strings.Compare(result.Items[i].NamespacedName().String(), result.Items[j].NamespacedName().String()) == -1
@@ -228,7 +223,7 @@ func (c *corev1Alpha1) ListResourceTemplates(filters ...func(i corev1alpha1.Reso
 	filters = append(filters, func(i corev1alpha1.ResourceTemplate) bool {
 		return i.GetNamespace() == c.ns
 	})
-	result.Items = cache.resourceTemplates.Items(filters...)
+	result.Items = cache.coreResourceTemplate.Items(filters...)
 
 	sort.Slice(result.Items, func(i, j int) bool {
 		return strings.Compare(result.Items[i].NamespacedName().String(), result.Items[j].NamespacedName().String()) == -1
