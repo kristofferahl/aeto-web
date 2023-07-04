@@ -26,11 +26,21 @@ func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 	// TODO: Make this configurable
 	operatorNamespace := "aeto"
 
-	client.AcmAwsV1Alpha1(operatorNamespace).Watch()
-	client.CoreV1Alpha1(operatorNamespace).Watch()
-	client.EventV1Alpha1(operatorNamespace).Watch()
-	client.Route53AwsV1Alpha1(operatorNamespace).Watch()
-	client.SustainabilityV1Alpha1(operatorNamespace).Watch()
+	if err := client.AcmAwsV1Alpha1(operatorNamespace).Watch(); err != nil {
+		panic(err)
+	}
+	if err := client.CoreV1Alpha1(operatorNamespace).Watch(); err != nil {
+		panic(err)
+	}
+	if err := client.EventV1Alpha1(operatorNamespace).Watch(); err != nil {
+		panic(err)
+	}
+	if err := client.Route53AwsV1Alpha1(operatorNamespace).Watch(); err != nil {
+		panic(err)
+	}
+	if err := client.SustainabilityV1Alpha1(operatorNamespace).Watch(); err != nil {
+		panic(err)
+	}
 
 	router.Group(func(r chi.Router) {
 		// r.Use(middleware.Timeout(10 * time.Second))
