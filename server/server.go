@@ -49,9 +49,9 @@ func (s *Server) getAssets() fs.FS {
 }
 
 func publishKeepAlive() {
-	eventManager.Publish("change", sse.Event{
-		Type:    "KeepAlive",
-		Payload: struct{}{},
+	eventManager.Publish("change", &ApiEvent{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		Type:      "KeepAlive",
 	})
 	time.Sleep(15 * time.Second)
 	go publishKeepAlive()

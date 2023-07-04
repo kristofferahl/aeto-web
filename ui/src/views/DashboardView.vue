@@ -73,10 +73,10 @@ export default {
           <h3>Resource Changes</h3>
           <ul>
             <li v-for="c in eventstream">
-              <span v-if="c.payload.apiVersion !== '' && c.payload.metadata">
+              <span v-if="['ResourceAdded','ResourceUpdated','ResourceDeleted'].includes(c.type)">
                 {{ c.type }}<br />
-                {{ c.payload.apiVersion }}/{{ c.payload.kind }}<br />
-                {{ c.payload.metadata.namespace }}/{{ c.payload.metadata.name }}<br />
+                {{ c.resource.apiVersion }}/{{ c.resource.kind }}<br />
+                {{ c.resource.metadata.namespace }}/{{ c.resource.metadata.name }}<br />
                 ({{
                   formatDistance(parseISO(c.ts), new Date(), { addSuffix: true })
                 }})

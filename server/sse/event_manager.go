@@ -3,41 +3,38 @@ package sse
 import (
 	"log"
 	"sync"
-	"time"
 )
 
-type Event struct {
-	Type      string      `json:"type"`    // Type of the event
-	Payload   interface{} `json:"payload"` // Event data payload
-	Timestamp string      `json:"ts"`
+type ServerSentEvent interface {
+	Payload() ([]byte, error)
 }
 
 type EventManager struct {
-	subscribers map[string]map[chan<- Event]struct{}
+	subscribers map[string]map[chan<- ServerSentEvent]struct{}
 	mu          sync.Mutex
 }
 
 func NewEventManager() *EventManager {
 	return &EventManager{
-		subscribers: make(map[string]map[chan<- Event]struct{}),
+		subscribers: make(map[string]map[chan<- ServerSentEvent]struct{}),
 	}
 }
 
-func (em *EventManager) Subscribe(eventType string, ch chan<- Event) {
+func (em *EventManager) Subscribe(eventType string, ch chan<- ServerSentEvent) {
 	log.Println("subscribing to", eventType)
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
 	subscribers, ok := em.subscribers[eventType]
 	if !ok {
-		subscribers = make(map[chan<- Event]struct{})
+		subscribers = make(map[chan<- ServerSentEvent]struct{})
 		em.subscribers[eventType] = subscribers
 	}
 
 	subscribers[ch] = struct{}{}
 }
 
-func (em *EventManager) Unsubscribe(eventType string, ch chan<- Event) {
+func (em *EventManager) Unsubscribe(eventType string, ch chan<- ServerSentEvent) {
 	log.Println("unsubscribing from", eventType)
 	em.mu.Lock()
 	defer em.mu.Unlock()
@@ -50,10 +47,9 @@ func (em *EventManager) Unsubscribe(eventType string, ch chan<- Event) {
 	}
 }
 
-func (em *EventManager) Publish(eventType string, event Event) {
+func (em *EventManager) Publish(eventType string, event ServerSentEvent) {
 	em.mu.Lock()
 	defer em.mu.Unlock()
-	event.Timestamp = time.Now().UTC().Format(time.RFC3339)
 
 	if subscribers, ok := em.subscribers[eventType]; ok {
 		for ch := range subscribers {

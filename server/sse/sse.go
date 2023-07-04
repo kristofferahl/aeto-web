@@ -1,7 +1,6 @@
 package sse
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -24,7 +23,7 @@ func HandleSSE(em *EventManager, w http.ResponseWriter, r *http.Request) {
 
 	log.Println("/sse, establishing connection", cid)
 
-	ch := make(chan Event)
+	ch := make(chan ServerSentEvent)
 	em.Subscribe("change", ch)
 
 	defer func() {
@@ -37,12 +36,13 @@ func HandleSSE(em *EventManager, w http.ResponseWriter, r *http.Request) {
 		select {
 		case event := <-ch:
 			log.Println("sse, write event to stream", cid)
-			b, err := json.Marshal(event)
+			p, err := event.Payload()
 			if err != nil {
-				log.Println("sse, error writing doing marshalling", cid)
+				log.Println("sse, error getting the payload of the event", cid)
 				continue
 			}
-			eventData := fmt.Sprintf("data: %s\n\n", string(b))
+
+			eventData := fmt.Sprintf("data: %s\n\n", string(p))
 
 			_, err = w.Write([]byte(eventData))
 			if err != nil {

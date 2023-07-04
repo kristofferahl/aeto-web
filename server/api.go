@@ -9,8 +9,20 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/kristofferahl/aeto-web/server/sse"
-	"github.com/teacat/jsonfilter"
 )
+
+type ApiEvent struct {
+	Timestamp string `json:"ts"`
+	Type      string `json:"type"`
+}
+
+func (e *ApiEvent) Payload() ([]byte, error) {
+	b, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+	return b, err
+}
 
 func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 	restConfig, err := getRestConfig(s.ClusterConfig)
@@ -162,7 +174,7 @@ func listResource(client *AetoClient, list func() (interface{}, error)) func(w h
 			return
 		}
 
-		res, err := jsonfilter.Filter(data, "items(metadata(annotations,creationTimestamp,finalizers,generation,name,namespace,resourceVersion,uid),spec,status)")
+		res, err := ApplyResourceListFilter(data)
 		if hasErr(w, err) {
 			return
 		}
@@ -189,7 +201,12 @@ func getResource(client *AetoClient, get func(namespace, name string) (interface
 				return
 			}
 
-			w.Write(data)
+			res, err := ApplyResourceFilter("%s", data)
+			if hasErr(w, err) {
+				return
+			}
+
+			w.Write(res)
 		} else {
 			w.WriteHeader(400)
 			w.Write([]byte(""))

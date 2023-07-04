@@ -1,9 +1,10 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
+	"time"
 
-	"github.com/kristofferahl/aeto-web/server/sse"
 	acmawsv1alpa1 "github.com/kristofferahl/aeto/apis/acm.aws/v1alpha1"
 	corev1alpha1 "github.com/kristofferahl/aeto/apis/core/v1alpha1"
 	eventv1alpha1 "github.com/kristofferahl/aeto/apis/event/v1alpha1"
@@ -64,6 +65,24 @@ type InMemoryCache struct {
 	sustainabilitySavingsPolicy ResourceCache[sustainabilityv1alpha1.SavingsPolicy]
 }
 
+type CacheEvent struct {
+	Timestamp string      `json:"ts"`
+	EventType string      `json:"type"`
+	Resource  interface{} `json:"resource"`
+}
+
+func (e *CacheEvent) Payload() ([]byte, error) {
+	b, err := json.Marshal(e)
+	if err != nil {
+		return nil, err
+	}
+	fb, err := ApplyResourceFilter("ts,type,resource(%s)", b)
+	if err != nil {
+		return nil, err
+	}
+	return fb, err
+}
+
 type ResourceCache[T CacheableEntry] interface {
 	Add(id types.UID, version string, obj T)
 	Update(id types.UID, newVersion string, obj T)
@@ -84,13 +103,6 @@ type CacheEntry[T CacheableEntry] struct {
 	Resource T
 }
 
-type CacheEvent struct {
-	Type      string `json:"type"`
-	Resource  string `json:"resource"`
-	Change    string `json:"change"`
-	Timestamp string `json:"ts"`
-}
-
 func (s Cache[T]) Add(id types.UID, version string, obj T) {
 	if id == "" {
 		panic(fmt.Errorf("id must not be empty"))
@@ -99,9 +111,10 @@ func (s Cache[T]) Add(id types.UID, version string, obj T) {
 		Version:  version,
 		Resource: obj,
 	}
-	eventManager.Publish("change", sse.Event{
-		Type:    "ResourceAdded",
-		Payload: obj,
+	eventManager.Publish("change", &CacheEvent{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		EventType: "ResourceAdded",
+		Resource:  obj,
 	})
 }
 
@@ -115,9 +128,10 @@ func (s Cache[T]) Update(id types.UID, newVersion string, obj T) {
 			Version:  newVersion,
 			Resource: obj,
 		}
-		eventManager.Publish("change", sse.Event{
-			Type:    "ResourceUpdated",
-			Payload: obj,
+		eventManager.Publish("change", &CacheEvent{
+			Timestamp: time.Now().UTC().Format(time.RFC3339),
+			EventType: "ResourceUpdated",
+			Resource:  obj,
 		})
 	}
 }
@@ -128,9 +142,10 @@ func (s Cache[T]) Delete(id types.UID) {
 	}
 	obj := s.data[string(id)]
 	delete(s.data, string(id))
-	eventManager.Publish("change", sse.Event{
-		Type:    "ResourceDeleted",
-		Payload: obj,
+	eventManager.Publish("change", &CacheEvent{
+		Timestamp: time.Now().UTC().Format(time.RFC3339),
+		EventType: "ResourceDeleted",
+		Resource:  obj,
 	})
 }
 
