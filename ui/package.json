@@ -10,6 +10,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@kyvg/vue3-notification": "^3.0.1",
     "date-fns": "^2.30.0",
     "pinia": "^2.0.35",
     "vue": "^3.2.47",

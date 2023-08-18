@@ -1,15 +1,73 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { useEventStreamStore } from './stores/eventStream'
+import { useNotification } from '@kyvg/vue3-notification'
+
+const source = ref()
+const router = useRouter()
+const { notify } = useNotification()
+const { prependEvent } = useEventStreamStore()
+
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+  )
+}
+
+onMounted(() => {
+  source.value = new EventSource('/api/sse?cid=' + uuidv4().substring(0, 6))
+  console.log('Connecting to server')
+  source.value.onmessage = (e) => {
+    console.log('New event', e)
+    const data = JSON.parse(e.data)
+    if (data.type === 'KeepAlive') return
+    const text = `${data.type} ${data.resource.kind}`
+    const link = `/${data.resource.kind}s/${data.resource.metadata.namespace}/${data.resource.metadata.name}`
+    notify({
+      title: 'Event',
+      text,
+      duration: 5000,
+      data: {
+        link
+      }
+    })
+
+    prependEvent(data)
+  }
+  source.value.onerror = (err) => {
+    console.error('Error', err)
+    source.value.close()
+  }
+})
+onBeforeUnmount(() => {
+  console.log('Disconnecting from server')
+  source.value.close()
+})
+
+function navigateToResource({ data: { link } }) {
+  router.push({
+    path: link
+  })
+}
 </script>
 
 <template>
+  <notifications
+    position="top right"
+    classes="aeto-notification"
+    pauseOnHover
+    @click="navigateToResource"
+  />
   <main>
     <header>
       <div class="wrapper">
         <h1 class="brand">aeto</h1>
         <p class="msg">aws-eks-tenant-operator</p>
         <ul class="menu float-right">
-          <li><RouterLink to="/about">About</RouterLink></li>
+          <li>
+            <RouterLink to="/about">About</RouterLink>
+          </li>
           <li>
             <a href="https://github.com/kristofferahl/aeto" target="_blank" rel="noopener"
               >Github</a

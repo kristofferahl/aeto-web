@@ -1,5 +1,8 @@
 <script setup>
 import { parseISO, formatDistance } from 'date-fns'
+import { useEventStreamStore } from '../stores/eventStream'
+
+const { eventStream } = useEventStreamStore()
 </script>
 
 <script>
@@ -9,18 +12,12 @@ function uuidv4() {
   )
 }
 
-function prepend(a, v) {
-  var na = a.slice()
-  na.unshift(v)
-  return na
-}
-
 export default {
   data() {
     return {
       error: null,
       dashboard: {},
-      eventstream: [],
+      // eventstream: [],
       source: null
     }
   },
@@ -40,20 +37,6 @@ export default {
 
   mounted() {
     this.fetchData()
-    this.source = new EventSource('/api/sse?cid=' + uuidv4().substring(0, 6))
-    console.log('Connecting to server')
-    this.source.onmessage = (e) => {
-      console.log('New event', e)
-      this.eventstream = prepend(this.eventstream, JSON.parse(e.data))
-    }
-    this.source.onerror = (err) => {
-      console.error('Error', err)
-      this.source.close()
-    }
-  },
-  beforeUnmount() {
-    console.log('Disconnecting from server')
-    this.source.close()
   }
 }
 </script>
@@ -88,11 +71,9 @@ export default {
         <div class="card">
           <h3>Resource Changes</h3>
           <ul>
-            <li
-              v-for="e in eventstream.filter((e) =>
-                ['ResourceAdded', 'ResourceUpdated', 'ResourceDeleted'].includes(e.type)
-              )"
-            >
+            <li v-for="e in eventStream.filter((e) =>
+              ['ResourceAdded', 'ResourceUpdated', 'ResourceDeleted'].includes(e.type)
+            )">
               {{ e.type }}<br />
               {{ e.resource.apiVersion }}/{{ e.resource.kind }}<br />
               {{ e.resource.metadata.namespace }}/{{ e.resource.metadata.name }}<br />
@@ -105,15 +86,13 @@ export default {
         <div class="card">
           <h3>Kubernetes Events</h3>
           <ul>
-            <li
-              v-for="e in eventstream.filter((e) =>
-                [
-                  'KubernetesEventAdded',
-                  'KubernetesEventUpdated',
-                  'KubernetesEventDeleted'
-                ].includes(e.type)
-              )"
-            >
+            <li v-for="e in eventStream.filter((e) =>
+              [
+                'KubernetesEventAdded',
+                'KubernetesEventUpdated',
+                'KubernetesEventDeleted'
+              ].includes(e.type)
+            )">
               {{ e.message }}<br />
               {{ e.resource.apiVersion }}/{{ e.resource.kind }}<br />
               {{ e.resource.namespace }}/{{ e.resource.name }}<br />
