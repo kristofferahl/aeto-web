@@ -38,6 +38,8 @@ func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 	// TODO: Make this configurable
 	operatorNamespace := "aeto"
 
+	WatchKubernetesEvents(client.clientset, operatorNamespace)
+
 	if err := client.AcmAwsV1Alpha1(operatorNamespace).Watch(); err != nil {
 		panic(err)
 	}
@@ -72,11 +74,35 @@ func addApiRoutes(s *Server, router *chi.Mux, em *sse.EventManager) {
 			if hasErr(w, err) {
 				return
 			}
+			blueprints, err := client.CoreV1Alpha1(operatorNamespace).ListBlueprints()
+			if hasErr(w, err) {
+				return
+			}
+			certificates, err := client.AcmAwsV1Alpha1(operatorNamespace).ListCertificates()
+			if hasErr(w, err) {
+				return
+			}
+			hostedzones, err := client.Route53AwsV1Alpha1(operatorNamespace).ListHostedZones()
+			if hasErr(w, err) {
+				return
+			}
+			savingspolicies, err := client.SustainabilityV1Alpha1(operatorNamespace).ListSavingsPolicies()
+			if hasErr(w, err) {
+				return
+			}
 
 			dashboard := struct {
-				Tenants int `json:"tenants"`
+				Tenants         int `json:"tenants"`
+				Blueprints      int `json:"blueprints"`
+				Certificates    int `json:"certificates"`
+				HostedZones     int `json:"hostedzones"`
+				SavingsPolicies int `json:"savingspolicies"`
 			}{
-				Tenants: len(tenants.Items),
+				Tenants:         len(tenants.Items),
+				Blueprints:      len(blueprints.Items),
+				Certificates:    len(certificates.Items),
+				HostedZones:     len(hostedzones.Items),
+				SavingsPolicies: len(savingspolicies.Items),
 			}
 
 			data, err := json.Marshal(dashboard)

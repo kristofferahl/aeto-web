@@ -189,6 +189,7 @@ aside nav a.router-link-active > svg {
 }
 .content .dashboard .card.stats {
   font-family: Poppins, sans-serif;
+  margin-bottom: 2rem;
 }
 .content .dashboard .card.stats .stats-title {
   font-size: 1.6rem;

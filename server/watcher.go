@@ -5,13 +5,77 @@ import (
 	"log"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
+	"k8s.io/client-go/informers"
+	"k8s.io/client-go/kubernetes"
 	k8scache "k8s.io/client-go/tools/cache"
 )
+
+func WatchKubernetesEvents(clientset *kubernetes.Clientset, namespace string) {
+	sharedInformers := informers.NewSharedInformerFactoryWithOptions(clientset, 5*time.Minute, informers.WithNamespace(namespace))
+	eventsInformer := sharedInformers.Core().V1().Events()
+
+	eventsInformer.Informer().AddEventHandler(k8scache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			e := obj.(*v1.Event)
+			log.Println("KubernetesEventAdded", e.Reason, e.Message, e.Source)
+			eventManager.Publish("change", &KubernetesEvent{
+				Timestamp: e.LastTimestamp.Format(time.RFC3339),
+				EventType: "KubernetesEventAdded",
+				Reason:    e.Reason,
+				Message:   e.Message,
+				Resource: EventResource{
+					ApiVersion: e.InvolvedObject.APIVersion,
+					Kind:       e.InvolvedObject.Kind,
+					Namespace:  e.InvolvedObject.Namespace,
+					Name:       e.InvolvedObject.Name,
+				},
+			})
+		},
+		UpdateFunc: func(oldObjs, newObj interface{}) {
+			e := newObj.(*v1.Event)
+			log.Println("KubernetesEventUpdated", e.Reason, e.Message, e.Source)
+			eventManager.Publish("change", &KubernetesEvent{
+				Timestamp: e.LastTimestamp.Format(time.RFC3339),
+				EventType: "KubernetesEventUpdated",
+				Reason:    e.Reason,
+				Message:   e.Message,
+				Resource: EventResource{
+					ApiVersion: e.InvolvedObject.APIVersion,
+					Kind:       e.InvolvedObject.Kind,
+					Namespace:  e.InvolvedObject.Namespace,
+					Name:       e.InvolvedObject.Name,
+				},
+			})
+		},
+		DeleteFunc: func(obj interface{}) {
+			e := obj.(*v1.Event)
+			log.Println("KubernetesEventDeleted", e.Reason, e.Message, e.Source)
+			eventManager.Publish("change", &KubernetesEvent{
+				Timestamp: e.LastTimestamp.Format(time.RFC3339),
+				EventType: "KubernetesEventDeleted",
+				Reason:    e.Reason,
+				Message:   e.Message,
+				Resource: EventResource{
+					ApiVersion: e.InvolvedObject.APIVersion,
+					Kind:       e.InvolvedObject.Kind,
+					Namespace:  e.InvolvedObject.Namespace,
+					Name:       e.InvolvedObject.Name,
+				},
+			})
+		},
+	})
+
+	// TODO: Stop the informer before exiting program
+	// ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	// defer cancel()
+	sharedInformers.Start(make(<-chan struct{}))
+}
 
 func Watch[T CacheableEntry](resource schema.GroupVersionResource, client dynamic.Interface, resourceFactory func() T, resourceCache ResourceCache[T]) error {
 	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(client, time.Minute*5, "", nil)
