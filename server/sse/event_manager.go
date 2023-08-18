@@ -20,38 +20,38 @@ func NewEventManager() *EventManager {
 	}
 }
 
-func (em *EventManager) Subscribe(eventType string, ch chan<- ServerSentEvent) {
-	log.Println("subscribing to", eventType)
+func (em *EventManager) Subscribe(eventstream string, ch chan<- ServerSentEvent) {
+	log.Println("subscribing to", eventstream)
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
-	subscribers, ok := em.subscribers[eventType]
+	subscribers, ok := em.subscribers[eventstream]
 	if !ok {
 		subscribers = make(map[chan<- ServerSentEvent]struct{})
-		em.subscribers[eventType] = subscribers
+		em.subscribers[eventstream] = subscribers
 	}
 
 	subscribers[ch] = struct{}{}
 }
 
-func (em *EventManager) Unsubscribe(eventType string, ch chan<- ServerSentEvent) {
-	log.Println("unsubscribing from", eventType)
+func (em *EventManager) Unsubscribe(eventstream string, ch chan<- ServerSentEvent) {
+	log.Println("unsubscribing from", eventstream)
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
-	if subscribers, ok := em.subscribers[eventType]; ok {
+	if subscribers, ok := em.subscribers[eventstream]; ok {
 		delete(subscribers, ch)
 		if len(subscribers) == 0 {
-			delete(em.subscribers, eventType)
+			delete(em.subscribers, eventstream)
 		}
 	}
 }
 
-func (em *EventManager) Publish(eventType string, event ServerSentEvent) {
+func (em *EventManager) Publish(eventstream string, event ServerSentEvent) {
 	em.mu.Lock()
 	defer em.mu.Unlock()
 
-	if subscribers, ok := em.subscribers[eventType]; ok {
+	if subscribers, ok := em.subscribers[eventstream]; ok {
 		for ch := range subscribers {
 			ch <- event
 		}
