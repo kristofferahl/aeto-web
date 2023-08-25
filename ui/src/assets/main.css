@@ -83,6 +83,34 @@ header .msg {
   position: relative;
 }
 
+header #sse-indicator {
+  background-color: transparent;
+  width: 1.5rem;
+  height: 1.5rem;
+  position: relative;
+  top: 2.5rem;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  border-radius: 50px;
+  box-shadow: 0 0 8px #ea4c89, inset 0 0 8px #ea4c89;
+}
+
+header #sse-indicator.connected {
+  -webkit-animation: pulse-connected 2s linear 1s infinite;
+}
+
+@-webkit-keyframes pulse-connected {
+  0% {
+    box-shadow: 0 0 8px #83d8ae, inset 0 0 8px #83d8ae;
+  }
+  50% {
+    box-shadow: 0 0 16px #83d8ae, inset 0 0 14px #83d8ae;
+  }
+  100% {
+    box-shadow: 0 0 8px #83d8ae, inset 0 0 8px #83d8ae;
+  }
+}
+
 header .menu {
   list-style: none;
   margin-bottom: 0;
@@ -169,7 +197,7 @@ aside nav a.router-link-active > svg {
 .content h2 {
   font-size: 1.2em;
   font-weight: 500;
-  color: white;
+  color: #ada6f2;
   font-family: Poppins, sans-serif;
 }
 
@@ -226,6 +254,16 @@ aside nav a.router-link-active > svg {
 
 .content .dashboard ul {
   list-style-position: outside;
+  list-style: none;
+}
+
+.content .dashboard li {
+  border-bottom: solid 1px #9a9cab;
+  margin: 0;
+  padding: 2rem 0;
+}
+.content .dashboard li:first-of-type {
+  padding-top: 0;
 }
 
 .aeto-notification {

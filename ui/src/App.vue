@@ -15,13 +15,29 @@ function uuidv4() {
   )
 }
 
+const connected = ref(false)
+
 onMounted(() => {
+  let timer
   source.value = new EventSource('/api/sse?cid=' + uuidv4().substring(0, 6))
   console.log('Connecting to server')
+  source.value.addEventListener('open', (e) => {
+    console.log('Connection established')
+    connected.value = true
+  })
   source.value.onmessage = (e) => {
     console.log('New event', e)
     const data = JSON.parse(e.data)
-    if (data.type === 'KeepAlive') return
+    if (data.type === 'KeepAlive') {
+      connected.value = true
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        connected.value = false
+      }, 30000)
+      return
+    }
     const text = `${data.type} ${data.resource.kind}`
     const link = `/${data.resource.kind}s/${data.resource.metadata.namespace}/${data.resource.metadata.name}`
     notify({
@@ -65,6 +81,9 @@ function navigateToResource({ data: { link } }) {
         <h1 class="brand">aeto</h1>
         <p class="msg">aws-eks-tenant-operator</p>
         <ul class="menu float-right">
+          <li>
+            <div id="sse-indicator" :class="connected ? 'connected' : null"></div>
+          </li>
           <li>
             <RouterLink to="/about">About</RouterLink>
           </li>

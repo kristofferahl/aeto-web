@@ -45,7 +45,7 @@ export default {
   <h2>Dashboard</h2>
   <div class="dashboard">
     <div class="row">
-      <div class="column column-10">
+      <div class="column column-20">
         <div class="card stats">
           <div class="stats-content">{{ dashboard.tenants }}</div>
           <div class="stats-title">Tenants</div>
@@ -67,13 +67,15 @@ export default {
           <div class="stats-title">SavingsPolicies</div>
         </div>
       </div>
-      <div class="column column-60">
+      <div class="column column-50">
         <div class="card">
           <h3>Resource Changes</h3>
           <ul>
-            <li v-for="e in eventStream.filter((e) =>
-              ['ResourceAdded', 'ResourceUpdated', 'ResourceDeleted'].includes(e.type)
-            )">
+            <li
+              v-for="e in eventStream.filter((e) =>
+                ['ResourceAdded', 'ResourceUpdated', 'ResourceDeleted'].includes(e.type)
+              )"
+            >
               {{ e.type }}<br />
               {{ e.resource.apiVersion }}/{{ e.resource.kind }}<br />
               {{ e.resource.metadata.namespace }}/{{ e.resource.metadata.name }}<br />
@@ -86,13 +88,15 @@ export default {
         <div class="card">
           <h3>Kubernetes Events</h3>
           <ul>
-            <li v-for="e in eventStream.filter((e) =>
-              [
-                'KubernetesEventAdded',
-                'KubernetesEventUpdated',
-                'KubernetesEventDeleted'
-              ].includes(e.type)
-            )">
+            <li
+              v-for="e in eventStream.filter((e) =>
+                [
+                  'KubernetesEventAdded',
+                  'KubernetesEventUpdated',
+                  'KubernetesEventDeleted'
+                ].includes(e.type)
+              )"
+            >
               {{ e.message }}<br />
               {{ e.resource.apiVersion }}/{{ e.resource.kind }}<br />
               {{ e.resource.namespace }}/{{ e.resource.name }}<br />
