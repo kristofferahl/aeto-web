@@ -232,24 +232,24 @@ aside nav a.router-link-active > svg {
   font-size: 18px;
   margin: 10px 5px 5px 5px;
   padding: 10px;
-  background: #187fe7;
+  background: #187fe7 !important;
   color: #ffffff;
   border-left: 5px solid #187fe7;
+}
 
-  &.success {
-    background: #68cd86;
-    border-left-color: #42a85f;
-  }
+.aeto-notification.success {
+  background: #68cd86;
+  border-left-color: #42a85f;
+}
 
-  &.warn {
-    background: #ffb648;
-    border-left-color: #f48a06;
-  }
+.aeto-notification.warn {
+  background: #ffb648;
+  border-left-color: #f48a06;
+}
 
-  &.error {
-    background: #e54d42;
-    border-left-color: #b82e24;
-  }
+.aeto-notification.error {
+  background: #e54d42;
+  border-left-color: #b82e24;
 }
 
 .aeto-notification:hover {

@@ -45,7 +45,7 @@ export default {
   <h2>Dashboard</h2>
   <div class="dashboard">
     <div class="row">
-      <div class="column column-20">
+      <div class="column column-10">
         <div class="card stats">
           <div class="stats-content">{{ dashboard.tenants }}</div>
           <div class="stats-title">Tenants</div>
@@ -67,7 +67,7 @@ export default {
           <div class="stats-title">SavingsPolicies</div>
         </div>
       </div>
-      <div class="column column-40">
+      <div class="column column-60">
         <div class="card">
           <h3>Resource Changes</h3>
           <ul>
@@ -82,7 +82,7 @@ export default {
           </ul>
         </div>
       </div>
-      <div class="column column-40">
+      <div class="column column-30">
         <div class="card">
           <h3>Kubernetes Events</h3>
           <ul>
